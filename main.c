@@ -1,6 +1,7 @@
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_mixer.h>
 #include <SDL2/SDL_image.h>
+#include <SDL2/SDL_ttf.h>
 #include <stdio.h>
 
 typedef struct {
@@ -36,7 +37,7 @@ int main(int argc, char* argv[]) {
     }
 
     printf("Playing music...\n");
-    Mix_PlayMusic(music, -1);  // Loop forever
+    Mix_PlayMusic(music, -1);
 
     if (SDL_Init(SDL_INIT_VIDEO) != 0) {
         printf("SDL_Init Error: %s\n", SDL_GetError());
@@ -48,13 +49,32 @@ int main(int argc, char* argv[]) {
                                           SDL_WINDOWPOS_CENTERED,
                                           640, 480,
                                           SDL_WINDOW_SHOWN);
+
     if (!window) {
         printf("SDL_CreateWindow Error: %s\n", SDL_GetError());
         SDL_Quit();
         return 1;
     }
 
-    SDL_Renderer* renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED);
+    TTF_Init();
+
+    TTF_Font* font = TTF_OpenFont("assets/fonts/Open_Sans/OpenSans-VariableFont_wdth,wght.ttf", 24);
+    if (!font) {
+        printf("Failed to load font: %s\n", TTF_GetError());
+        return 1;
+    }
+
+    SDL_Color color = { 255, 255, 255 };
+
+    SDL_Renderer* renderer = SDL_CreateRenderer(window, -1, 0);
+    SDL_Surface* surface = TTF_RenderText_Blended(font, "Noob 32", color);
+    SDL_Texture* texture = SDL_CreateTextureFromSurface(renderer, surface);
+    SDL_FreeSurface(surface);
+
+
+
+
+
     if (!renderer) {
         printf("SDL_CreateRenderer Error: %s\n", SDL_GetError());
         SDL_DestroyWindow(window);
@@ -62,15 +82,21 @@ int main(int argc, char* argv[]) {
         return 1;
     }
 
-    // --- Define buttons ---
     Button playButton = {{220, 150, 200, 60}, {0, 200, 0, 255}, "Play"};
     Button quitButton = {{220, 250, 200, 60}, {200, 0, 0, 255}, "Quit"};
+
+    SDL_Surface* playSurface = TTF_RenderText_Blended(font, playButton.label, color);
+    SDL_Texture* playText = SDL_CreateTextureFromSurface(renderer, playSurface);
+    SDL_FreeSurface(playSurface);
+
+    SDL_Surface* quitSurface = TTF_RenderText_Blended(font, quitButton.label, color);
+    SDL_Texture* quitText = SDL_CreateTextureFromSurface(renderer, quitSurface);
+    SDL_FreeSurface(quitSurface);
 
     int running = 1;
     SDL_Event e;
 
     while (running) {
-        // --- Event handling ---
         while (SDL_PollEvent(&e)) {
             if (e.type == SDL_QUIT) {
                 running = 0;
@@ -111,13 +137,38 @@ int main(int argc, char* argv[]) {
             SDL_SetRenderDrawColor(renderer, 200, 0, 0, 255);
         SDL_RenderFillRect(renderer, &quitButton.rect);
 
+        SDL_Rect playRectText = {0, 0, 0, 0};
+        SDL_QueryTexture(playText, NULL, NULL, &playRectText.w, &playRectText.h);
+        playRectText.x = playButton.rect.x + (playButton.rect.w - playRectText.w) / 2;
+        playRectText.y = playButton.rect.y + (playButton.rect.h - playRectText.h) / 2;
+        SDL_RenderCopy(renderer, playText, NULL, &playRectText);
+
+
+        SDL_Rect quitRectText = {0, 0, 0, 0};
+        SDL_QueryTexture(quitText, NULL, NULL, &quitRectText.w, &quitRectText.h);
+        quitRectText.x = quitButton.rect.x + (quitButton.rect.w - quitRectText.w) / 2;
+        quitRectText.y = quitButton.rect.y + (quitButton.rect.h - quitRectText.h) / 2;
+        SDL_RenderCopy(renderer, quitText, NULL, &quitRectText);
+
+
+
+
         SDL_RenderPresent(renderer);
         SDL_Delay(16); // ~60 FPS
     }
 
+    Mix_HaltMusic();
+    Mix_FreeMusic(music);
+    Mix_CloseAudio();
+    SDL_DestroyTexture(playText);
+    SDL_DestroyTexture(quitText);
+    SDL_DestroyTexture(texture);
+    TTF_CloseFont(font);
+    TTF_Quit();
     SDL_DestroyRenderer(renderer);
     SDL_DestroyWindow(window);
     SDL_Quit();
+
 
     return 0;
 }

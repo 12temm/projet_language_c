@@ -13,6 +13,7 @@ target_link_libraries(MySDLProject
         "${SDL2_PATH}/lib/libSDL2main.a"
         "${SDL2_PATH}/lib/libSDL2.a"
         "${SDL2_PATH}/lib/libSDL2_mixer.a"
+        "${SDL2_PATH}/lib/libSDL2_ttf.a"
         winmm
         setupapi
         user32
@@ -21,6 +22,7 @@ target_link_libraries(MySDLProject
         shell32
         imm32
         version
+        rpcrt4
 )
 
 add_custom_command(TARGET MySDLProject POST_BUILD
