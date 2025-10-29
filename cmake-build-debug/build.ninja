@@ -64,9 +64,9 @@ build CMakeFiles/MySDLProject.dir/main.c.obj: C_COMPILER__MySDLProject_unscanned
 #############################################
 # Link the executable MySDLProject.exe
 
-build MySDLProject.exe: C_EXECUTABLE_LINKER__MySDLProject_Debug CMakeFiles/MySDLProject.dir/main.c.obj | C$:/Users/bedia/projet_language_C/SDL2/lib/libSDL2main.a C$:/Users/bedia/projet_language_C/SDL2/lib/libSDL2.a
+build MySDLProject.exe: C_EXECUTABLE_LINKER__MySDLProject_Debug CMakeFiles/MySDLProject.dir/main.c.obj | C$:/Users/bedia/projet_language_C/SDL2/lib/libSDL2main.a C$:/Users/bedia/projet_language_C/SDL2/lib/libSDL2.a C$:/Users/bedia/projet_language_C/SDL2/lib/libSDL2_mixer.a
   FLAGS = -g
-  LINK_LIBRARIES = -lmingw32  C:/Users/bedia/projet_language_C/SDL2/lib/libSDL2main.a  C:/Users/bedia/projet_language_C/SDL2/lib/libSDL2.a  -lwinmm  -lsetupapi  -luser32  -lgdi32  -lole32  -lshell32  -limm32  -lversion  -lkernel32 -luser32 -lgdi32 -lwinspool -lshell32 -lole32 -loleaut32 -luuid -lcomdlg32 -ladvapi32
+  LINK_LIBRARIES = -lmingw32  C:/Users/bedia/projet_language_C/SDL2/lib/libSDL2main.a  C:/Users/bedia/projet_language_C/SDL2/lib/libSDL2.a  C:/Users/bedia/projet_language_C/SDL2/lib/libSDL2_mixer.a  -lwinmm  -lsetupapi  -luser32  -lgdi32  -lole32  -lshell32  -limm32  -lversion  -lkernel32 -luser32 -lgdi32 -lwinspool -lshell32 -lole32 -loleaut32 -luuid -lcomdlg32 -ladvapi32
   OBJECT_DIR = CMakeFiles\MySDLProject.dir
   POST_BUILD = C:\WINDOWS\system32\cmd.exe /C "cd /D C:\Users\bedia\projet_language_C\cmake-build-debug && "C:\Program Files\JetBrains\CLion 2024.3.2\bin\cmake\win\x64\bin\cmake.exe" -E copy_if_different C:/Users/bedia/projet_language_C/SDL2/bin/SDL2.dll C:/Users/bedia/projet_language_C/cmake-build-debug"
   PRE_LINK = cd .

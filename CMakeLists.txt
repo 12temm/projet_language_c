@@ -12,6 +12,7 @@ target_link_libraries(MySDLProject
         mingw32
         "${SDL2_PATH}/lib/libSDL2main.a"
         "${SDL2_PATH}/lib/libSDL2.a"
+        "${SDL2_PATH}/lib/libSDL2_mixer.a"
         winmm
         setupapi
         user32
