@@ -87,6 +87,10 @@ int main(int argc, char* argv[]) {
     SDL_Texture* textureCouteau = SDL_CreateTextureFromSurface(renderer, surfaceCouteau);
     SDL_FreeSurface(surfaceCouteau);
 
+    SDL_Surface* surfacePistolet = IMG_Load("assets/images/pistolet.png");
+    SDL_Texture* texturePistolet = SDL_CreateTextureFromSurface(renderer, surfacePistolet);
+    SDL_FreeSurface(surfacePistolet);
+
 
     if (!renderer) {
         printf("SDL_CreateRenderer Error: %s\n", SDL_GetError());
@@ -98,6 +102,7 @@ int main(int argc, char* argv[]) {
     Button playButton = {{220, 150, 200, 60}, {0, 200, 0, 255}, "Play",1};
     Button quitButton = {{220, 250, 200, 60}, {200, 0, 0, 255}, "Quit",1};
     Button swordButton ={{100, 100, 200, 200}, {0, 200, 0, 255}, "Sword",1};
+    Button gunButton ={{300, 100, 200, 200}, {0, 200, 0, 255}, "Gun",1};
 
 
     SDL_Surface* playSurface = TTF_RenderText_Blended(font, playButton.label, color);
@@ -134,8 +139,12 @@ int main(int argc, char* argv[]) {
                 } else if (isMouseInside(quitButton.rect, mx, my)) {
                     printf("Quit button clicked!\n");
                     running = 0;
+
                 } else if (isMouseInside(swordButton.rect, mx, my)) {
                     printf("sword button clicked!\n");
+
+                } else if(isMouseInside(gunButton.rect, mx, my)) {
+                    printf("gun button clicked!\n");
                 }
             }
         }
@@ -178,6 +187,7 @@ int main(int argc, char* argv[]) {
 
         if (inMenu==0) {
             SDL_RenderCopy(renderer, textureCouteau, NULL, &swordButton.rect);
+            SDL_RenderCopy(renderer, texturePistolet, NULL, &gunButton.rect);
         }
 
 
