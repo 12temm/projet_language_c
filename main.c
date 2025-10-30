@@ -8,6 +8,7 @@ typedef struct {
     SDL_Rect rect;
     SDL_Color color;
     const char* label;
+    int visible;
 } Button;
 
 int isMouseInside(SDL_Rect rect, int x, int y) {
@@ -17,10 +18,19 @@ int isMouseInside(SDL_Rect rect, int x, int y) {
 
 int main(int argc, char* argv[]) {
 
+    int inMenu = 1;
+
     if (SDL_Init(SDL_INIT_AUDIO) < 0) {
         printf("SDL_Init Error: %s\n", SDL_GetError());
         return 1;
     }
+
+    if (IMG_Init(IMG_INIT_PNG) == 0) {
+        printf("IMG_Init Error: %s\n", IMG_GetError());
+        SDL_Quit();
+        return 1;
+    }
+
 
     if (Mix_OpenAudio(44100, MIX_DEFAULT_FORMAT, 2, 2048) < 0) {
         printf("Mix_OpenAudio Error: %s\n", Mix_GetError());
@@ -28,8 +38,10 @@ int main(int argc, char* argv[]) {
         return 1;
     }
 
-    Mix_Music* music = Mix_LoadMUS("assets/sounds/game_music.mp3");
-    if (!music) {
+    Mix_Music* musicMenu = Mix_LoadMUS("assets/sounds/menu_music.mp3");
+    Mix_Music* musicGame = Mix_LoadMUS("assets/sounds/game_music.mp3");
+
+    if (!musicMenu) {
         printf("Mix_LoadMUS Error: %s\n", Mix_GetError());
         Mix_CloseAudio();
         SDL_Quit();
@@ -37,7 +49,7 @@ int main(int argc, char* argv[]) {
     }
 
     printf("Playing music...\n");
-    Mix_PlayMusic(music, -1);
+    Mix_PlayMusic(musicMenu, -1);
 
     if (SDL_Init(SDL_INIT_VIDEO) != 0) {
         printf("SDL_Init Error: %s\n", SDL_GetError());
@@ -71,8 +83,9 @@ int main(int argc, char* argv[]) {
     SDL_Texture* texture = SDL_CreateTextureFromSurface(renderer, surface);
     SDL_FreeSurface(surface);
 
-
-
+    SDL_Surface* surfaceCouteau = IMG_Load("assets/images/couteau.png");
+    SDL_Texture* textureCouteau = SDL_CreateTextureFromSurface(renderer, surfaceCouteau);
+    SDL_FreeSurface(surfaceCouteau);
 
 
     if (!renderer) {
@@ -82,8 +95,8 @@ int main(int argc, char* argv[]) {
         return 1;
     }
 
-    Button playButton = {{220, 150, 200, 60}, {0, 200, 0, 255}, "Play"};
-    Button quitButton = {{220, 250, 200, 60}, {200, 0, 0, 255}, "Quit"};
+    Button playButton = {{220, 150, 200, 60}, {0, 200, 0, 255}, "Play",1};
+    Button quitButton = {{220, 250, 200, 60}, {200, 0, 0, 255}, "Quit",1};
 
     SDL_Surface* playSurface = TTF_RenderText_Blended(font, playButton.label, color);
     SDL_Texture* playText = SDL_CreateTextureFromSurface(renderer, playSurface);
@@ -106,9 +119,15 @@ int main(int argc, char* argv[]) {
                 int mx = e.button.x;
                 int my = e.button.y;
 
-                if (isMouseInside(playButton.rect, mx, my)) {
+                if (inMenu && isMouseInside(playButton.rect, mx, my)) {
                     printf("Play button clicked!\n");
-                    // TODO: Start your game here
+                    inMenu = 0; // switch to game
+                    playButton.visible = 0;
+                    quitButton.visible = 0;
+                    Mix_HaltMusic();
+                    Mix_FreeMusic(musicMenu);
+                    Mix_PlayMusic(musicGame, -1);
+
                 } else if (isMouseInside(quitButton.rect, mx, my)) {
                     printf("Quit button clicked!\n");
                     running = 0;
@@ -116,49 +135,53 @@ int main(int argc, char* argv[]) {
             }
         }
 
-        // --- Rendering ---
         SDL_SetRenderDrawColor(renderer, 30, 30, 30, 255); // background
         SDL_RenderClear(renderer);
 
         int mx, my;
         SDL_GetMouseState(&mx, &my);
 
-        // Play button
-        if (isMouseInside(playButton.rect, mx, my))
-            SDL_SetRenderDrawColor(renderer, 0, 255, 0, 255);
-        else
-            SDL_SetRenderDrawColor(renderer, 0, 200, 0, 255);
-        SDL_RenderFillRect(renderer, &playButton.rect);
+        if (playButton.visible) {
+            if (isMouseInside(playButton.rect, mx, my))
+                SDL_SetRenderDrawColor(renderer, 0, 255, 0, 255);
+            else
+                SDL_SetRenderDrawColor(renderer, 0, 200, 0, 255);
+            SDL_RenderFillRect(renderer, &playButton.rect);
 
-        // Quit button
-        if (isMouseInside(quitButton.rect, mx, my))
-            SDL_SetRenderDrawColor(renderer, 255, 0, 0, 255);
-        else
-            SDL_SetRenderDrawColor(renderer, 200, 0, 0, 255);
-        SDL_RenderFillRect(renderer, &quitButton.rect);
-
-        SDL_Rect playRectText = {0, 0, 0, 0};
-        SDL_QueryTexture(playText, NULL, NULL, &playRectText.w, &playRectText.h);
-        playRectText.x = playButton.rect.x + (playButton.rect.w - playRectText.w) / 2;
-        playRectText.y = playButton.rect.y + (playButton.rect.h - playRectText.h) / 2;
-        SDL_RenderCopy(renderer, playText, NULL, &playRectText);
-
-
-        SDL_Rect quitRectText = {0, 0, 0, 0};
-        SDL_QueryTexture(quitText, NULL, NULL, &quitRectText.w, &quitRectText.h);
-        quitRectText.x = quitButton.rect.x + (quitButton.rect.w - quitRectText.w) / 2;
-        quitRectText.y = quitButton.rect.y + (quitButton.rect.h - quitRectText.h) / 2;
-        SDL_RenderCopy(renderer, quitText, NULL, &quitRectText);
+            SDL_Rect playRectText = {0, 0, 0, 0};
+            SDL_QueryTexture(playText, NULL, NULL, &playRectText.w, &playRectText.h);
+            playRectText.x = playButton.rect.x + (playButton.rect.w - playRectText.w) / 2;
+            playRectText.y = playButton.rect.y + (playButton.rect.h - playRectText.h) / 2;
+            SDL_RenderCopy(renderer, playText, NULL, &playRectText);
+        }
 
 
 
+        if (quitButton.visible) {
+            if (isMouseInside(quitButton.rect, mx, my))
+                SDL_SetRenderDrawColor(renderer, 255, 0, 0, 255);
+            else
+                SDL_SetRenderDrawColor(renderer, 200, 0, 0, 255);
+            SDL_RenderFillRect(renderer, &quitButton.rect);
+
+            SDL_Rect quitRectText = {0, 0, 0, 0};
+            SDL_QueryTexture(quitText, NULL, NULL, &quitRectText.w, &quitRectText.h);
+            quitRectText.x = quitButton.rect.x + (quitButton.rect.w - quitRectText.w) / 2;
+            quitRectText.y = quitButton.rect.y + (quitButton.rect.h - quitRectText.h) / 2;
+            SDL_RenderCopy(renderer, quitText, NULL, &quitRectText);
+        }
+
+        if (inMenu==0) {
+            SDL_Rect dst = {100, 100, 200, 200};
+            SDL_RenderCopy(renderer, textureCouteau, NULL, &dst);
+        }
 
         SDL_RenderPresent(renderer);
-        SDL_Delay(16); // ~60 FPS
+        SDL_Delay(16);
     }
 
     Mix_HaltMusic();
-    Mix_FreeMusic(music);
+    Mix_FreeMusic(musicMenu);
     Mix_CloseAudio();
     SDL_DestroyTexture(playText);
     SDL_DestroyTexture(quitText);

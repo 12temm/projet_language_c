@@ -14,6 +14,7 @@ target_link_libraries(MySDLProject
         "${SDL2_PATH}/lib/libSDL2.a"
         "${SDL2_PATH}/lib/libSDL2_mixer.a"
         "${SDL2_PATH}/lib/libSDL2_ttf.a"
+        "${SDL2_PATH}/lib/libSDL2_image.a"
         winmm
         setupapi
         user32
