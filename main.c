@@ -97,6 +97,8 @@ int main(int argc, char* argv[]) {
 
     Button playButton = {{220, 150, 200, 60}, {0, 200, 0, 255}, "Play",1};
     Button quitButton = {{220, 250, 200, 60}, {200, 0, 0, 255}, "Quit",1};
+    Button swordButton ={{100, 100, 200, 200}, {0, 200, 0, 255}, "Sword",1};
+
 
     SDL_Surface* playSurface = TTF_RenderText_Blended(font, playButton.label, color);
     SDL_Texture* playText = SDL_CreateTextureFromSurface(renderer, playSurface);
@@ -128,9 +130,12 @@ int main(int argc, char* argv[]) {
                     Mix_FreeMusic(musicMenu);
                     Mix_PlayMusic(musicGame, -1);
 
+
                 } else if (isMouseInside(quitButton.rect, mx, my)) {
                     printf("Quit button clicked!\n");
                     running = 0;
+                } else if (isMouseInside(swordButton.rect, mx, my)) {
+                    printf("sword button clicked!\n");
                 }
             }
         }
@@ -172,9 +177,10 @@ int main(int argc, char* argv[]) {
         }
 
         if (inMenu==0) {
-            SDL_Rect dst = {100, 100, 200, 200};
-            SDL_RenderCopy(renderer, textureCouteau, NULL, &dst);
+            SDL_RenderCopy(renderer, textureCouteau, NULL, &swordButton.rect);
         }
+
+
 
         SDL_RenderPresent(renderer);
         SDL_Delay(16);
