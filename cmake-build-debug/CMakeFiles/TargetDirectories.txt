@@ -1,3 +1,3 @@
-C:/repo-projet-c/cmake-build-debug/CMakeFiles/MySDLProject.dir
-C:/repo-projet-c/cmake-build-debug/CMakeFiles/edit_cache.dir
-C:/repo-projet-c/cmake-build-debug/CMakeFiles/rebuild_cache.dir
+C:/projet_langage_C/cmake-build-debug/CMakeFiles/MySDLProject.dir
+C:/projet_langage_C/cmake-build-debug/CMakeFiles/edit_cache.dir
+C:/projet_langage_C/cmake-build-debug/CMakeFiles/rebuild_cache.dir
