@@ -107,6 +107,27 @@ int main(int argc, char* argv[]) {
     SDL_Texture* texturePistoletHover = SDL_CreateTextureFromSurface(renderer, surfacePistoletHover);
     SDL_FreeSurface(surfacePistoletHover);
 
+    SDL_Surface* background = IMG_Load("assets/images/carte_ver2.png");
+    if (background == NULL) {
+        SDL_Log("ERREUR IMG_Load Error: %s\n", IMG_GetError());
+        SDL_DestroyTexture(texture);
+        SDL_DestroyRenderer(renderer);
+        SDL_DestroyWindow(window);
+        SDL_Quit();
+        exit(EXIT_FAILURE);
+    }
+
+    SDL_Texture *texture_background = SDL_CreateTextureFromSurface(renderer, background);
+    SDL_FreeSurface(background);
+    if(texture_background == NULL) {
+        SDL_Log("ERREUR IMG_Load Error: %s\n", IMG_GetError());
+        SDL_DestroyTexture(texture);
+        SDL_DestroyRenderer(renderer);
+        SDL_DestroyWindow(window);
+        SDL_Quit();
+        exit(EXIT_FAILURE);
+    }
+
     Char player;
 
     player.x = 300;
@@ -114,8 +135,8 @@ int main(int argc, char* argv[]) {
     player.vx = 0;
     player.vy = 0;
     player.speed = 2.0f;
-    player.rect.w = 26;
-    player.rect.h = 26;
+    player.rect.w = 20;
+    player.rect.h = 20;
 
     SDL_Surface* img = IMG_Load("assets/images/bonhomme.png");
     player.texture = SDL_CreateTextureFromSurface(renderer, img);
@@ -133,6 +154,7 @@ int main(int argc, char* argv[]) {
     Button swordButton ={{100, 100, 200, 200}, {0, 200, 0, 255}, "Sword",1};
     Button gunButton ={{300, 100, 200, 200}, {0, 200, 0, 255}, "Gun",1};
 
+    SDL_Rect rect;
 
     SDL_Surface* playSurface = TTF_RenderText_Blended(font, playButton.label, color);
     SDL_Texture* playText = SDL_CreateTextureFromSurface(renderer, playSurface);
@@ -251,6 +273,23 @@ int main(int argc, char* argv[]) {
 
        }
         if (inGame == 1){
+
+            if (SDL_QueryTexture(texture_background,NULL,NULL, &rect.w, &rect.h) != 0) {
+                SDL_Log("ERREUR > %s\n", SDL_GetError());
+                SDL_DestroyTexture(texture);
+                SDL_DestroyRenderer(renderer);
+                SDL_DestroyWindow(window);
+                IMG_Quit();
+                SDL_Quit();
+                exit(EXIT_FAILURE);
+            }
+
+            rect.x = (800 -rect.w)/2;
+            rect.y = (800 -rect.h)/2;
+
+            SDL_RenderCopy(renderer, texture_background, NULL, &rect);
+
+
                 player.x += player.vx;
                 player.y += player.vy;
 
