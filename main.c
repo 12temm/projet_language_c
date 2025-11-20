@@ -86,10 +86,16 @@ int main(int argc, char* argv[]) {
     SDL_Surface* surfaceCouteau = IMG_Load("assets/images/couteau.png");
     SDL_Texture* textureCouteau = SDL_CreateTextureFromSurface(renderer, surfaceCouteau);
     SDL_FreeSurface(surfaceCouteau);
+    SDL_Surface* surfaceCouteauHover = IMG_Load("assets/images/couteauhover.png");
+    SDL_Texture* textureCouteauHover = SDL_CreateTextureFromSurface(renderer, surfaceCouteauHover);
+    SDL_FreeSurface(surfaceCouteauHover);
 
     SDL_Surface* surfacePistolet = IMG_Load("assets/images/pistolet.png");
     SDL_Texture* texturePistolet = SDL_CreateTextureFromSurface(renderer, surfacePistolet);
     SDL_FreeSurface(surfacePistolet);
+    SDL_Surface* surfacePistoletHover = IMG_Load("assets/images/pistolethover.png");
+    SDL_Texture* texturePistoletHover = SDL_CreateTextureFromSurface(renderer, surfacePistoletHover);
+    SDL_FreeSurface(surfacePistoletHover);
 
 
     if (!renderer) {
@@ -185,12 +191,19 @@ int main(int argc, char* argv[]) {
             SDL_RenderCopy(renderer, quitText, NULL, &quitRectText);
         }
 
-        if (inMenu==0) {
+       if (inMenu == 0) {
+        if (isMouseInside(swordButton.rect, mx, my)) {
+            SDL_RenderCopy(renderer, textureCouteauHover, NULL, &swordButton.rect);
+        } else {
             SDL_RenderCopy(renderer, textureCouteau, NULL, &swordButton.rect);
-            SDL_RenderCopy(renderer, texturePistolet, NULL, &gunButton.rect);
         }
 
-
+        if (isMouseInside(gunButton.rect, mx, my)) {
+            SDL_RenderCopy(renderer, texturePistoletHover, NULL, &gunButton.rect);
+        } else {
+            SDL_RenderCopy(renderer, texturePistolet, NULL, &gunButton.rect);
+        }
+    }
 
         SDL_RenderPresent(renderer);
         SDL_Delay(16);
