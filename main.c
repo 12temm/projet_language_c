@@ -11,6 +11,14 @@ typedef struct {
     int visible;
 } Button;
 
+typedef struct {
+    float x, y;
+    float vx, vy;
+    float speed;
+    SDL_Texture* texture;
+    SDL_Rect rect;
+} Char;
+
 int isMouseInside(SDL_Rect rect, int x, int y) {
     return (x >= rect.x && x <= rect.x + rect.w &&
             y >= rect.y && y <= rect.y + rect.h);
@@ -19,6 +27,8 @@ int isMouseInside(SDL_Rect rect, int x, int y) {
 int main(int argc, char* argv[]) {
 
     int inMenu = 1;
+    int inMenu2 = 0;
+    int inGame = 0;
 
     if (SDL_Init(SDL_INIT_AUDIO) < 0) {
         printf("SDL_Init Error: %s\n", SDL_GetError());
@@ -59,7 +69,7 @@ int main(int argc, char* argv[]) {
     SDL_Window* window = SDL_CreateWindow("SDL2 Menu",
                                           SDL_WINDOWPOS_CENTERED,
                                           SDL_WINDOWPOS_CENTERED,
-                                          640, 480,
+                                          800, 800,
                                           SDL_WINDOW_SHOWN);
 
     if (!window) {
@@ -97,6 +107,19 @@ int main(int argc, char* argv[]) {
     SDL_Texture* texturePistoletHover = SDL_CreateTextureFromSurface(renderer, surfacePistoletHover);
     SDL_FreeSurface(surfacePistoletHover);
 
+    Char player;
+
+    player.x = 300;
+    player.y = 300;
+    player.vx = 0;
+    player.vy = 0;
+    player.speed = 2.0f;
+    player.rect.w = 26;
+    player.rect.h = 26;
+
+    SDL_Surface* img = IMG_Load("assets/images/bonhomme.png");
+    player.texture = SDL_CreateTextureFromSurface(renderer, img);
+    SDL_FreeSurface(img);
 
     if (!renderer) {
         printf("SDL_CreateRenderer Error: %s\n", SDL_GetError());
@@ -124,8 +147,25 @@ int main(int argc, char* argv[]) {
 
     while (running) {
         while (SDL_PollEvent(&e)) {
-            if (e.type == SDL_QUIT) {
+
+            if (e.type == SDL_QUIT)
                 running = 0;
+
+            if (inGame) {
+
+                if (e.type == SDL_KEYDOWN) {
+                    if (e.key.keysym.sym == SDLK_z) player.vy = -player.speed;
+                    if (e.key.keysym.sym == SDLK_s) player.vy =  player.speed;
+                    if (e.key.keysym.sym == SDLK_q) player.vx = -player.speed;
+                    if (e.key.keysym.sym == SDLK_d) player.vx =  player.speed;
+                }
+
+                if (e.type == SDL_KEYUP) {
+                    if (e.key.keysym.sym == SDLK_z || e.key.keysym.sym == SDLK_s)
+                        player.vy = 0;
+                    if (e.key.keysym.sym == SDLK_q || e.key.keysym.sym == SDLK_d)
+                        player.vx = 0;
+                }
             }
 
             if (e.type == SDL_MOUSEBUTTONDOWN && e.button.button == SDL_BUTTON_LEFT) {
@@ -133,27 +173,32 @@ int main(int argc, char* argv[]) {
                 int my = e.button.y;
 
                 if (inMenu && isMouseInside(playButton.rect, mx, my)) {
-                    printf("Play button clicked!\n");
-                    inMenu = 0; // switch to game
+                    inMenu = 0;
+                    inMenu2 = 1;
                     playButton.visible = 0;
                     quitButton.visible = 0;
+
                     Mix_HaltMusic();
-                    Mix_FreeMusic(musicMenu);
                     Mix_PlayMusic(musicGame, -1);
+                }
 
+                else if (inMenu2 && isMouseInside(swordButton.rect, mx, my)) {
+                    inMenu2 = 0;
+                    inGame = 1;
+                }
 
-                } else if (isMouseInside(quitButton.rect, mx, my)) {
-                    printf("Quit button clicked!\n");
+                else if (inMenu2 && isMouseInside(gunButton.rect, mx, my)) {
+                    inMenu2 = 0;
+                    inGame = 1;
+                }
+
+                else if (isMouseInside(quitButton.rect, mx, my)) {
                     running = 0;
-
-                } else if (isMouseInside(swordButton.rect, mx, my)) {
-                    printf("sword button clicked!\n");
-
-                } else if(isMouseInside(gunButton.rect, mx, my)) {
-                    printf("gun button clicked!\n");
                 }
             }
         }
+
+
 
         SDL_SetRenderDrawColor(renderer, 30, 30, 30, 255); // background
         SDL_RenderClear(renderer);
@@ -191,7 +236,7 @@ int main(int argc, char* argv[]) {
             SDL_RenderCopy(renderer, quitText, NULL, &quitRectText);
         }
 
-       if (inMenu == 0) {
+       if (inMenu2 == 1) {
         if (isMouseInside(swordButton.rect, mx, my)) {
             SDL_RenderCopy(renderer, textureCouteauHover, NULL, &swordButton.rect);
         } else {
@@ -203,7 +248,20 @@ int main(int argc, char* argv[]) {
         } else {
             SDL_RenderCopy(renderer, texturePistolet, NULL, &gunButton.rect);
         }
-    }
+
+       }
+        if (inGame == 1){
+                player.x += player.vx;
+                player.y += player.vy;
+
+                player.rect.x = (int)player.x;
+                player.rect.y = (int)player.y;
+
+            SDL_RenderCopy(renderer, player.texture, NULL, &player.rect);
+
+        }
+
+
 
         SDL_RenderPresent(renderer);
         SDL_Delay(16);
