@@ -107,7 +107,7 @@ int main(int argc, char* argv[]) {
     SDL_Texture* texturePistoletHover = SDL_CreateTextureFromSurface(renderer, surfacePistoletHover);
     SDL_FreeSurface(surfacePistoletHover);
 
-    SDL_Surface* background = IMG_Load("assets/images/carte_ver2.png");
+    SDL_Surface* background = IMG_Load("assets/images/background_game.png");
     if (background == NULL) {
         SDL_Log("ERREUR IMG_Load Error: %s\n", IMG_GetError());
         SDL_DestroyTexture(texture);
@@ -127,6 +127,28 @@ int main(int argc, char* argv[]) {
         SDL_Quit();
         exit(EXIT_FAILURE);
     }
+
+    SDL_Surface* object_background = IMG_Load("assets/images/object.png");
+    if (object_background == NULL) {
+        SDL_Log("ERREUR IMG_Load Error: %s\n", IMG_GetError());
+        SDL_DestroyTexture(texture);
+        SDL_DestroyRenderer(renderer);
+        SDL_DestroyWindow(window);
+        SDL_Quit();
+        exit(EXIT_FAILURE);
+    }
+
+    SDL_Texture *texture_object_background = SDL_CreateTextureFromSurface(renderer, object_background);
+    SDL_FreeSurface(background);
+    if(texture_object_background == NULL) {
+        SDL_Log("ERREUR IMG_Load Error: %s\n", IMG_GetError());
+        SDL_DestroyTexture(texture);
+        SDL_DestroyRenderer(renderer);
+        SDL_DestroyWindow(window);
+        SDL_Quit();
+        exit(EXIT_FAILURE);
+    }
+
 
     Char player;
 
@@ -297,6 +319,21 @@ int main(int argc, char* argv[]) {
                 player.rect.y = (int)player.y;
 
             SDL_RenderCopy(renderer, player.texture, NULL, &player.rect);
+
+            if (SDL_QueryTexture(texture_object_background,NULL,NULL, &rect.w, &rect.h) != 0) {
+                SDL_Log("ERREUR > %s\n", SDL_GetError());
+                SDL_DestroyTexture(texture);
+                SDL_DestroyRenderer(renderer);
+                SDL_DestroyWindow(window);
+                IMG_Quit();
+                SDL_Quit();
+                exit(EXIT_FAILURE);
+            }
+
+            rect.x = (800 -rect.w)/2;
+            rect.y = (800 -rect.h)/2;
+
+            SDL_RenderCopy(renderer, texture_object_background, NULL, &rect);
 
         }
 
