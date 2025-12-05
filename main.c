@@ -15,9 +15,10 @@ typedef struct {
     float x, y;
     float vx, vy;
     float speed;
-    SDL_Texture* texture;
+    int orientation;
+    SDL_Texture* textureR;
+    SDL_Texture* textureL;
     SDL_Rect rect;
-    int direction;
 } Char;
 
 int isMouseInside(SDL_Rect rect, int x, int y) {
@@ -161,9 +162,19 @@ int main(int argc, char* argv[]) {
     player.rect.w = 20;
     player.rect.h = 20;
 
-    SDL_Surface* img = IMG_Load("assets/images/bonhomme.png");
-    player.texture = SDL_CreateTextureFromSurface(renderer, img);
-    SDL_FreeSurface(img);
+    SDL_Surface* bonhomme_right = IMG_Load("assets/images/bonhommeR.png");
+    player.textureR = SDL_CreateTextureFromSurface(renderer, bonhomme_right);
+    SDL_FreeSurface(bonhomme_right);
+
+    SDL_Surface* bonhomme_left = IMG_Load("assets/images/bonhommeL.png");
+    player.textureL = SDL_CreateTextureFromSurface(renderer, bonhomme_left);
+    SDL_FreeSurface(bonhomme_left);
+
+    player.vx = 0;
+    player.vy = 0;
+
+    player.orientation = 1;
+    const Uint8 *state = SDL_GetKeyboardState(NULL);
 
     if (!renderer) {
         printf("SDL_CreateRenderer Error: %s\n", SDL_GetError());
@@ -198,12 +209,10 @@ int main(int argc, char* argv[]) {
 
             if (inGame) {
 
-                if (e.type == SDL_KEYDOWN) {
-                    if (e.key.keysym.sym == SDLK_z) player.vy = -player.speed;
-                    if (e.key.keysym.sym == SDLK_s) player.vy =  player.speed;
-                    if (e.key.keysym.sym == SDLK_q) player.vx = -player.speed;
-                    if (e.key.keysym.sym == SDLK_d) player.vx =  player.speed;
-                }
+                if (state[SDL_SCANCODE_A]) { player.vx = -player.speed; player.orientation = 2; }
+                if (state[SDL_SCANCODE_D]) { player.vx =  player.speed; player.orientation = 1; }
+                if (state[SDL_SCANCODE_W]) player.vy = -player.speed;
+                if (state[SDL_SCANCODE_S]) player.vy =  player.speed;
 
                 if (e.type == SDL_KEYUP) {
                     if (e.key.keysym.sym == SDLK_z || e.key.keysym.sym == SDLK_s)
@@ -319,7 +328,13 @@ int main(int argc, char* argv[]) {
                 player.rect.x = (int)player.x;
                 player.rect.y = (int)player.y;
 
-            SDL_RenderCopy(renderer, player.texture, NULL, &player.rect);
+            if (player.orientation == 1) {
+                SDL_RenderCopy(renderer, player.textureR, NULL, &player.rect);
+            }
+            else if (player.orientation == 2) {
+                SDL_RenderCopy(renderer, player.textureL, NULL, &player.rect);
+            }
+
 
             if (SDL_QueryTexture(texture_object_background,NULL,NULL, &rect.w, &rect.h) != 0) {
                 SDL_Log("ERREUR > %s\n", SDL_GetError());
