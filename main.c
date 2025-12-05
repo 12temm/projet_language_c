@@ -17,6 +17,7 @@ typedef struct {
     float speed;
     SDL_Texture* texture;
     SDL_Rect rect;
+    int direction;
 } Char;
 
 int isMouseInside(SDL_Rect rect, int x, int y) {
@@ -160,7 +161,7 @@ int main(int argc, char* argv[]) {
     player.rect.w = 20;
     player.rect.h = 20;
 
-    SDL_Surface* img = IMG_Load("assets/images/bobonobo.png");
+    SDL_Surface* img = IMG_Load("assets/images/bonhomme.png");
     player.texture = SDL_CreateTextureFromSurface(renderer, img);
     SDL_FreeSurface(img);
 
