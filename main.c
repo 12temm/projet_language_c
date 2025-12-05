@@ -139,7 +139,7 @@ int main(int argc, char* argv[]) {
     }
 
     SDL_Texture *texture_object_background = SDL_CreateTextureFromSurface(renderer, object_background);
-    SDL_FreeSurface(background);
+    SDL_FreeSurface(object_background);
     if(texture_object_background == NULL) {
         SDL_Log("ERREUR IMG_Load Error: %s\n", IMG_GetError());
         SDL_DestroyTexture(texture);
@@ -160,7 +160,7 @@ int main(int argc, char* argv[]) {
     player.rect.w = 20;
     player.rect.h = 20;
 
-    SDL_Surface* img = IMG_Load("assets/images/bonhomme.png");
+    SDL_Surface* img = IMG_Load("assets/images/bobonobo.png");
     player.texture = SDL_CreateTextureFromSurface(renderer, img);
     SDL_FreeSurface(img);
 
