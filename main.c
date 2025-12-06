@@ -19,7 +19,7 @@ typedef struct {
     SDL_Texture* textureR;
     SDL_Texture* textureL;
     SDL_Rect rect;
-} Char;
+} Chara;
 
 int isMouseInside(SDL_Rect rect, int x, int y) {
     return (x >= rect.x && x <= rect.x + rect.w &&
@@ -68,10 +68,12 @@ int main(int argc, char* argv[]) {
         return 1;
     }
 
+    int w_window = 800;
+    int h_window = 800;
     SDL_Window* window = SDL_CreateWindow("SDL2 Menu",
                                           SDL_WINDOWPOS_CENTERED,
                                           SDL_WINDOWPOS_CENTERED,
-                                          800, 800,
+                                          w_window, h_window,
                                           SDL_WINDOW_SHOWN);
 
     if (!window) {
@@ -152,7 +154,7 @@ int main(int argc, char* argv[]) {
     }
 
 
-    Char player;
+    Chara player;
 
     player.x = 300;
     player.y = 300;
@@ -187,6 +189,8 @@ int main(int argc, char* argv[]) {
     Button quitButton = {{220, 250, 200, 60}, {200, 0, 0, 255}, "Quit",1};
     Button swordButton ={{100, 100, 200, 200}, {0, 200, 0, 255}, "Sword",1};
     Button gunButton ={{300, 100, 200, 200}, {0, 200, 0, 255}, "Gun",1};
+
+
 
     SDL_Rect rect;
 
@@ -304,8 +308,7 @@ int main(int argc, char* argv[]) {
         }
 
        }
-        if (inGame == 1){
-
+        if (inGame == 1) {
             if (SDL_QueryTexture(texture_background,NULL,NULL, &rect.w, &rect.h) != 0) {
                 SDL_Log("ERREUR > %s\n", SDL_GetError());
                 SDL_DestroyTexture(texture);
@@ -322,11 +325,28 @@ int main(int argc, char* argv[]) {
             SDL_RenderCopy(renderer, texture_background, NULL, &rect);
 
 
-                player.x += player.vx;
-                player.y += player.vy;
+            double border_x = w_window*3.7/100;
+            if (player.x <= border_x) {
+                player.x = border_x + 1;
+            }
+            border_x = w_window*6/100;
+            if (player.x >= w_window-border_x) {
+                player.x = w_window-border_x - 1 ;
+            }
+            double border_y = h_window*2.6/100;
+            if (player.y <= border_y) {
+                player.y = border_y + 1 ;
+            }
+            border_y = h_window*3.6/100;
+            if (player.y >= h_window-border_y) {
+                player.y = w_window-border_y - 1 ;
+            }
 
-                player.rect.x = (int)player.x;
-                player.rect.y = (int)player.y;
+            player.x += player.vx;
+            player.y += player.vy;
+
+            player.rect.x = (int)player.x;
+            player.rect.y = (int)player.y;
 
             if (player.orientation == 1) {
                 SDL_RenderCopy(renderer, player.textureR, NULL, &player.rect);
@@ -352,7 +372,6 @@ int main(int argc, char* argv[]) {
             SDL_RenderCopy(renderer, texture_object_background, NULL, &rect);
 
         }
-
 
 
         SDL_RenderPresent(renderer);
