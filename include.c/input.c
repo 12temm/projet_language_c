@@ -9,14 +9,11 @@ void updatePlayer(Chara* player, const Uint8* state) {
     player->x += player->vx;
     player->y += player->vy;
 
-    double border_x = W_WINDOW * 0.037;
-    double border_y = H_WINDOW * 0.026;
-
-    if (player->x <= border_x) player->x = border_x + 1;
-    if (player->x >= W_WINDOW - border_x - player->rect.w) player->x = W_WINDOW - border_x - player->rect.w - 1;
-
-    if (player->y <= border_y) player->y = border_y + 1;
-    if (player->y >= H_WINDOW - border_y - player->rect.h) player->y = H_WINDOW - border_y - player->rect.h - 1;
+    double bx = W_WINDOW * 0.037, by = H_WINDOW * 0.026;
+    if (player->x <= bx) player->x = bx + 1;
+    if (player->x >= W_WINDOW - bx - player->rect.w) player->x = W_WINDOW - bx - player->rect.w - 1;
+    if (player->y <= by) player->y = by + 1;
+    if (player->y >= H_WINDOW - by - player->rect.h) player->y = H_WINDOW - by - player->rect.h - 1;
 
     player->rect.x = (int)player->x;
     player->rect.y = (int)player->y;

@@ -1,6 +1,4 @@
-#ifndef BUTTON_H
-#define BUTTON_H
-
+#pragma once
 #include <SDL2/SDL.h>
 
 typedef struct {
@@ -12,5 +10,3 @@ typedef struct {
 
 void drawColoredButton(SDL_Renderer* renderer, Button btn, SDL_Texture* textTex, int mx, int my, SDL_Color hoverCol);
 void drawImageButton(SDL_Renderer* renderer, SDL_Rect rect, SDL_Texture* normal, SDL_Texture* hover, int mx, int my);
-
-#endif

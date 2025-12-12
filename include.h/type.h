@@ -1,5 +1,4 @@
-#ifndef TYPES_H
-#define TYPES_H
+
 
 #include <SDL2/SDL.h>
 
@@ -10,4 +9,3 @@ typedef struct {
     int visible;
 } Button;
 
-#endif
