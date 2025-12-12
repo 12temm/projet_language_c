@@ -11,6 +11,8 @@ add_executable(MySDLProject
         include.c/Utils.c
         include.c/settings.c
         include.c/button.c
+        include.h/game_setting.h
+        include.c/game_setting.c
 )
 
 target_include_directories(MySDLProject PRIVATE

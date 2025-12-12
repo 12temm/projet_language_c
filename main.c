@@ -11,6 +11,7 @@
 #include "draw.h"
 #include "Utils.h"
 #include "settings.h"
+#include "game_setting.h"
 
 int main(int argc, char* argv[]) {
     SDL_Window* window = NULL;
@@ -26,14 +27,29 @@ int main(int argc, char* argv[]) {
     if (musicMenu) Mix_PlayMusic(musicMenu, -1);
 
     SDL_Color white = {255, 255, 255};
-    SDL_Surface* tmp;
+    SDL_Color green = {0, 200, 0, 255};
+    SDL_Color red = {200, 0, 0, 255};
+    SDL_Color blue = {80, 80, 255, 255};
 
+    SDL_Surface* tmp;
     tmp = TTF_RenderText_Blended(font, "Play", white);
     SDL_Texture* tPlay = SDL_CreateTextureFromSurface(renderer, tmp); SDL_FreeSurface(tmp);
     tmp = TTF_RenderText_Blended(font, "Quit", white);
     SDL_Texture* tQuit = SDL_CreateTextureFromSurface(renderer, tmp); SDL_FreeSurface(tmp);
     tmp = TTF_RenderText_Blended(font, "Parametres", white);
     SDL_Texture* tSet = SDL_CreateTextureFromSurface(renderer, tmp); SDL_FreeSurface(tmp);
+
+    tmp = TTF_RenderText_Blended(font, "Reprendre", white);
+    SDL_Texture* tResume = SDL_CreateTextureFromSurface(renderer, tmp); SDL_FreeSurface(tmp);
+
+    KeyConfig keys;
+    keys.up = SDL_SCANCODE_W;
+    keys.down = SDL_SCANCODE_S;
+    keys.left = SDL_SCANCODE_A;
+    keys.right = SDL_SCANCODE_D;
+
+    SettingsContext settingsCtx;
+    initSettings(renderer, font, &settingsCtx, &keys);
 
     SDL_Surface* s;
     s = IMG_Load("assets/images/background_game.png"); SDL_Texture* bg = SDL_CreateTextureFromSurface(renderer, s); SDL_FreeSurface(s);
@@ -47,41 +63,90 @@ int main(int argc, char* argv[]) {
     s = IMG_Load("assets/images/bonhommeR.png"); player.textureR = SDL_CreateTextureFromSurface(renderer, s); SDL_FreeSurface(s);
     s = IMG_Load("assets/images/bonhommeL.png"); player.textureL = SDL_CreateTextureFromSurface(renderer, s); SDL_FreeSurface(s);
 
-    Button btnPlay = {{300, 250, 200, 60}, {0, 200, 0, 255}, "Play", 1};
-    Button btnQuit = {{300, 490, 200, 60}, {200, 0, 0, 255}, "Quit", 1};
-    Button btnSet = createSettingsButton(300, 370);
-    Button btnRet = {{300, 600, 200, 60}, {150, 150, 150, 255}, "Retour", 1};
-    Button btnSword = {{100, 100, 200, 200}, {0, 200, 0, 255}, "Sword", 1};
-    Button btnGun = {{300, 100, 200, 200}, {0, 200, 0, 255}, "Gun", 1};
+    Button btnPlay = {{300, 250, 200, 60}, green, "Play", 1};
+    Button btnQuit = {{300, 490, 200, 60}, red, "Quit", 1};
+    Button btnSet =  {{300, 370, 200, 60}, blue, "Parametres", 1};
+    Button btnSword = {{100, 100, 200, 200}, green, "Sword", 1};
+    Button btnGun = {{300, 100, 200, 200}, green, "Gun", 1};
+
+    Button btnPauseResume = {{300, 200, 200, 60}, green, "Reprendre", 1};
+    Button btnPauseSet =    {{300, 300, 200, 60}, blue, "Parametres", 1};
+    Button btnPauseQuit =   {{300, 400, 200, 60}, red, "Quitter", 1};
 
     int inMenu = 1, inSettings = 0, inMenu2 = 0, inGame = 0, running = 1;
+    int isPaused = 0;
+
     SDL_Event e;
 
     while (running) {
         while (SDL_PollEvent(&e)) {
             if (e.type == SDL_QUIT) running = 0;
-            if (inGame && e.type == SDL_KEYUP) {
-               if (e.key.keysym.sym == SDLK_z || e.key.keysym.sym == SDLK_s) player.vy = 0;
-               if (e.key.keysym.sym == SDLK_q || e.key.keysym.sym == SDLK_d) player.vx = 0;
+
+            if (inSettings && settingsCtx.rebindingId != -1) {
+                if (e.type == SDL_KEYDOWN) {
+                    handleRebind(&settingsCtx, e.key.keysym.scancode, &keys, renderer, font);
+                }
+                continue;
             }
+
+            if (e.type == SDL_KEYDOWN && e.key.keysym.sym == SDLK_ESCAPE) {
+                if (inGame) {
+                    isPaused = !isPaused;
+                } else if (inSettings && settingsCtx.fromGame) {
+                    inSettings = 0;
+                    inGame = 1;
+                    isPaused = 1;
+                }
+            }
+
+            if (inGame && !isPaused && e.type == SDL_KEYUP) {
+               if (e.key.keysym.scancode == keys.up || e.key.keysym.scancode == keys.down) player.vy = 0;
+               if (e.key.keysym.scancode == keys.left || e.key.keysym.scancode == keys.right) player.vx = 0;
+            }
+
             if (e.type == SDL_MOUSEBUTTONDOWN && e.button.button == SDL_BUTTON_LEFT) {
                 int mx = e.button.x, my = e.button.y;
+
                 if (inMenu) {
                     if (isMouseInside(btnPlay.rect, mx, my)) { inMenu = 0; inMenu2 = 1; Mix_HaltMusic(); Mix_PlayMusic(musicGame, -1); }
-                    else if (isMouseInside(btnSet.rect, mx, my)) { inMenu = 0; inSettings = 1; }
+                    else if (isMouseInside(btnSet.rect, mx, my)) {
+                        inMenu = 0; inSettings = 1;
+                        settingsCtx.currentPage = 0;
+                        settingsCtx.fromGame = 0;
+                    }
                     else if (isMouseInside(btnQuit.rect, mx, my)) { running = 0; }
-                } else if (inSettings) {
-                    if (isMouseInside(btnRet.rect, mx, my)) { inSettings = 0; inMenu = 1; }
-                    int nv = getVolumeFromClick(mx, my);
-                    if (nv != -1) { volume = nv; Mix_VolumeMusic(volume); }
-                } else if (inMenu2) {
-                    if (isMouseInside(btnSword.rect, mx, my)) { inMenu2 = 0; inGame = 1; }
-                    else if (isMouseInside(btnGun.rect, mx, my)) { inMenu2 = 0; inGame = 1; }
+                }
+                else if (inSettings) {
+                    handleSettingsEvents(&settingsCtx, mx, my, &inSettings, &inMenu, &inGame, &isPaused, &volume);
+                }
+                else if (inMenu2) {
+                    if (isMouseInside(btnSword.rect, mx, my)) { inMenu2 = 0; inGame = 1; isPaused = 0; }
+                    else if (isMouseInside(btnGun.rect, mx, my)) { inMenu2 = 0; inGame = 1; isPaused = 0; }
+                }
+                else if (inGame && isPaused) {
+                    if (isMouseInside(btnPauseResume.rect, mx, my)) {
+                        isPaused = 0;
+                    }
+                    else if (isMouseInside(btnPauseSet.rect, mx, my)) {
+                        inGame = 0;
+                        inSettings = 1;
+                        settingsCtx.currentPage = 0;
+                        settingsCtx.fromGame = 1;
+                    }
+                    else if (isMouseInside(btnPauseQuit.rect, mx, my)) {
+                        inGame = 0;
+                        inMenu = 1;
+                        isPaused = 0;
+                        Mix_HaltMusic();
+                        Mix_PlayMusic(musicMenu, -1);
+                    }
                 }
             }
         }
 
-        if (inGame) updatePlayer(&player, SDL_GetKeyboardState(NULL));
+        if (inGame && !isPaused) {
+            updatePlayer(&player, SDL_GetKeyboardState(NULL), &keys);
+        }
 
         SDL_SetRenderDrawColor(renderer, 30, 30, 30, 255);
         SDL_RenderClear(renderer);
@@ -89,24 +154,42 @@ int main(int argc, char* argv[]) {
         SDL_GetMouseState(&mx, &my);
 
         if (inMenu) {
-            drawColoredButton(renderer, btnPlay, tPlay, mx, my, (SDL_Color){0, 255, 0, 255});
-            drawColoredButton(renderer, btnQuit, tQuit, mx, my, (SDL_Color){255, 0, 0, 255});
-            drawColoredButton(renderer, btnSet, tSet, mx, my, (SDL_Color){80, 80, 255, 255});
-        } else if (inSettings) {
-            drawSettingsMenu(renderer, font, mx, my, btnRet, volume);
-        } else if (inMenu2) {
+            drawColoredButton(renderer, btnPlay, tPlay, mx, my, green);
+            drawColoredButton(renderer, btnQuit, tQuit, mx, my, red);
+            drawColoredButton(renderer, btnSet, tSet, mx, my, blue);
+        }
+        else if (inSettings) {
+            drawSettings(renderer, &settingsCtx, font, volume);
+        }
+        else if (inMenu2) {
             drawImageButton(renderer, btnSword.rect, tKnife, tKnifeH, mx, my);
             drawImageButton(renderer, btnGun.rect, tGun, tGunH, mx, my);
-        } else if (inGame) {
+        }
+        else if (inGame) {
             SDL_RenderCopy(renderer, bg, NULL, NULL);
             drawPlayer(renderer, &player);
             SDL_Rect rObj = {0,0,0,0}; SDL_QueryTexture(obj, NULL, NULL, &rObj.w, &rObj.h);
             rObj.x = (800 - rObj.w)/2; rObj.y = (800 - rObj.h)/2;
             SDL_RenderCopy(renderer, obj, NULL, &rObj);
+
+            if (isPaused) {
+                SDL_SetRenderDrawBlendMode(renderer, SDL_BLENDMODE_BLEND);
+                SDL_SetRenderDrawColor(renderer, 0, 0, 0, 128);
+                SDL_Rect fullScreen = {0, 0, 2000, 2000};
+                SDL_RenderFillRect(renderer, &fullScreen);
+                SDL_SetRenderDrawBlendMode(renderer, SDL_BLENDMODE_NONE);
+
+                drawColoredButton(renderer, btnPauseResume, tResume, mx, my, green);
+                drawColoredButton(renderer, btnPauseSet, tSet, mx, my, blue);
+                drawColoredButton(renderer, btnPauseQuit, tQuit, mx, my, red);
+            }
         }
         SDL_RenderPresent(renderer);
         SDL_Delay(16);
     }
+
+    cleanSettings(&settingsCtx);
+    SDL_DestroyTexture(tPlay); SDL_DestroyTexture(tQuit); SDL_DestroyTexture(tSet); SDL_DestroyTexture(tResume);
     cleanup(window, renderer, font, musicMenu, musicGame);
     return 0;
 }

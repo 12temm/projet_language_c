@@ -10,3 +10,10 @@ typedef struct {
     SDL_Texture *textureR, *textureL;
     SDL_Rect rect;
 } Chara;
+
+typedef struct {
+    SDL_Scancode up;
+    SDL_Scancode down;
+    SDL_Scancode left;
+    SDL_Scancode right;
+} KeyConfig;
