@@ -1,12 +1,29 @@
 cmake_minimum_required(VERSION 3.15)
 project(MySDLProject C)
 
-set(SDL2_PATH "C:/projet_langage_C/SDL2")
+# Ton chemin spécifique
+set(SDL2_PATH "C:/Users/Benoit/CLionProjects/untitled1/SDL2")
 
-add_executable(MySDLProject main.c)
+# 1. Liste des fichiers sources (.c)
+# On inclut le main et tous les fichiers du dossier include.c
+add_executable(MySDLProject
+        main.c
+        include.c/init.c
+        include.c/input.c
+        include.c/draw.c
+        include.c/Utils.c
+        include.c/settings.c
+        include.c/button.c
+)
 
-target_include_directories(MySDLProject PRIVATE "${SDL2_PATH}/include")
+# 2. Dossiers d'entête (.h)
+# CMake va regarder dans "include.h" automatiquement
+target_include_directories(MySDLProject PRIVATE
+        "${SDL2_PATH}/include"
+        "${CMAKE_SOURCE_DIR}/include.h"
+)
 
+# 3. Lier les bibliothèques SDL2
 target_link_libraries(MySDLProject
         PRIVATE
         mingw32
@@ -26,6 +43,7 @@ target_link_libraries(MySDLProject
         rpcrt4
 )
 
+# 4. Copier la DLL SDL2 à côté de l'exécutable
 add_custom_command(TARGET MySDLProject POST_BUILD
         COMMAND ${CMAKE_COMMAND} -E copy_if_different
         "${SDL2_PATH}/bin/SDL2.dll"
