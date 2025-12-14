@@ -19,7 +19,7 @@ typedef struct {
     SDL_Texture* textureR;
     SDL_Texture* textureL;
     SDL_Rect rect;
-} Chara;
+} Char;
 
 int isMouseInside(SDL_Rect rect, int x, int y) {
     return (x >= rect.x && x <= rect.x + rect.w &&
@@ -154,7 +154,7 @@ int main(int argc, char* argv[]) {
     }
 
 
-    Chara player;
+    Char player;
 
     player.x = 300;
     player.y = 300;
@@ -212,19 +212,21 @@ int main(int argc, char* argv[]) {
                 running = 0;
 
             if (inGame) {
+                player.vx = 0;
+                player.vy = 0;
 
-                if (state[SDL_SCANCODE_A]) { player.vx = -player.speed; player.orientation = 2; }
-                if (state[SDL_SCANCODE_D]) { player.vx =  player.speed; player.orientation = 1; }
-                if (state[SDL_SCANCODE_W]) player.vy = -player.speed;
-                if (state[SDL_SCANCODE_S]) player.vy =  player.speed;
-
-                if (e.type == SDL_KEYUP) {
-                    if (e.key.keysym.sym == SDLK_z || e.key.keysym.sym == SDLK_s)
-                        player.vy = 0;
-                    if (e.key.keysym.sym == SDLK_q || e.key.keysym.sym == SDLK_d)
-                        player.vx = 0;
+                if (state[SDL_SCANCODE_A]) {
+                    player.vx -= player.speed;
+                    player.orientation = 2;
                 }
+                if (state[SDL_SCANCODE_D]) {
+                    player.vx += player.speed;
+                    player.orientation = 1;
+                }
+                if (state[SDL_SCANCODE_W]) player.vy -= player.speed;
+                if (state[SDL_SCANCODE_S]) player.vy += player.speed;
             }
+
 
             if (e.type == SDL_MOUSEBUTTONDOWN && e.button.button == SDL_BUTTON_LEFT) {
                 int mx = e.button.x;
