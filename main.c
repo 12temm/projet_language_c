@@ -3,6 +3,7 @@
 #include <SDL2/SDL_image.h>
 #include <SDL2/SDL_ttf.h>
 #include <stdio.h>
+#include <math.h>
 
 typedef struct {
     SDL_Rect rect;
@@ -16,9 +17,17 @@ typedef struct {
     float vx, vy;
     float speed;
     int orientation;
+    int moving;
     SDL_Texture* textureR;
     SDL_Texture* textureL;
+    SDL_Texture* textureR2;
+    SDL_Texture* textureL2;
+    SDL_Texture* textureR3;
+    SDL_Texture* textureL3;
     SDL_Rect rect;
+    int currentFrame;
+    Uint32 lastFrameTime;
+    Uint32 frameDelay;
 } Char;
 
 int isMouseInside(SDL_Rect rect, int x, int y) {
@@ -156,13 +165,40 @@ int main(int argc, char* argv[]) {
 
     Char player;
 
+    player.moving = 0;
     player.x = 300;
     player.y = 300;
     player.vx = 0;
     player.vy = 0;
-    player.speed = 2.0f;
+    player.speed = 2;
     player.rect.w = 20;
     player.rect.h = 20;
+    player.orientation = 1;
+    player.currentFrame = 0;
+    player.lastFrameTime = 0;
+    player.frameDelay = 100;
+
+
+    Char enemie;
+
+    enemie.moving = 0;
+    enemie.x = 300;
+    enemie.y = 300;
+    enemie.vx = 0;
+    enemie.vy = 0;
+    enemie.speed = 1.5f;
+    enemie.rect.w = 15;
+    enemie.rect.h = 15;
+    enemie.orientation = 1;
+
+
+    SDL_Surface* mechant_right = IMG_Load("assets/images/mechantR.png");
+    enemie.textureR = SDL_CreateTextureFromSurface(renderer, mechant_right);
+    SDL_FreeSurface(mechant_right);
+
+    SDL_Surface* mechant_left = IMG_Load("assets/images/mechantL.png");
+    enemie.textureL = SDL_CreateTextureFromSurface(renderer, mechant_left);
+    SDL_FreeSurface(mechant_left);
 
     SDL_Surface* bonhomme_right = IMG_Load("assets/images/bonhommeR.png");
     player.textureR = SDL_CreateTextureFromSurface(renderer, bonhomme_right);
@@ -172,10 +208,22 @@ int main(int argc, char* argv[]) {
     player.textureL = SDL_CreateTextureFromSurface(renderer, bonhomme_left);
     SDL_FreeSurface(bonhomme_left);
 
-    player.vx = 0;
-    player.vy = 0;
+    SDL_Surface* bonhomme_right2 = IMG_Load("assets/images/bonhomme2R.png");
+    player.textureR2 = SDL_CreateTextureFromSurface(renderer, bonhomme_right2);
+    SDL_FreeSurface(bonhomme_right2);
 
-    player.orientation = 1;
+    SDL_Surface* bonhomme_left2 = IMG_Load("assets/images/bonhomme2L.png");
+    player.textureL2 = SDL_CreateTextureFromSurface(renderer, bonhomme_left2);
+    SDL_FreeSurface(bonhomme_left2);
+
+    SDL_Surface* bonhomme_right3 = IMG_Load("assets/images/bonhomme3R.png");
+    player.textureR3 = SDL_CreateTextureFromSurface(renderer, bonhomme_right3);
+    SDL_FreeSurface(bonhomme_right3);
+
+    SDL_Surface* bonhomme_left3 = IMG_Load("assets/images/bonhomme3L.png");
+    player.textureL3 = SDL_CreateTextureFromSurface(renderer, bonhomme_left3);
+    SDL_FreeSurface(bonhomme_left3);
+
     const Uint8 *state = SDL_GetKeyboardState(NULL);
 
     if (!renderer) {
@@ -206,6 +254,8 @@ int main(int argc, char* argv[]) {
     SDL_Event e;
 
     while (running) {
+
+
         while (SDL_PollEvent(&e)) {
 
             if (e.type == SDL_QUIT)
@@ -225,6 +275,18 @@ int main(int argc, char* argv[]) {
                 }
                 if (state[SDL_SCANCODE_W]) player.vy -= player.speed;
                 if (state[SDL_SCANCODE_S]) player.vy += player.speed;
+
+                float len = sqrtf(player.vx * player.vx + player.vy * player.vy);
+                if (len > 0) {
+                    player.vx = (player.vx / len) * player.speed;
+                    player.vy = (player.vy / len) * player.speed;
+                }
+
+                if (player.vx != 0 || player.vy != 0) {
+                    player.moving = 1;
+                } else {
+                    player.moving = 0;
+                }
             }
 
 
@@ -255,6 +317,23 @@ int main(int argc, char* argv[]) {
                 else if (isMouseInside(quitButton.rect, mx, my)) {
                     running = 0;
                 }
+            }
+        }
+
+        if (inGame) {
+            float dx = player.x - enemie.x;
+            float dy = player.y - enemie.y;
+
+            float dist = sqrtf(dx*dx + dy*dy);
+
+            if (dist > 0.1f) {
+                dx /= dist;
+                dy /= dist;
+
+                enemie.vx = dx * enemie.speed;
+                enemie.vy = dy * enemie.speed;
+
+                enemie.orientation = (dx >= 0) ? 1 : 2;
             }
         }
 
@@ -311,6 +390,19 @@ int main(int argc, char* argv[]) {
 
        }
         if (inGame == 1) {
+
+
+
+            if (player.moving) {
+                Uint32 now = SDL_GetTicks();
+                if (now - player.lastFrameTime > player.frameDelay) {
+                    player.currentFrame = (player.currentFrame + 1) % 3;
+                    player.lastFrameTime = now;
+                }
+            } else {
+                player.currentFrame = 0;
+            }
+
             if (SDL_QueryTexture(texture_background,NULL,NULL, &rect.w, &rect.h) != 0) {
                 SDL_Log("ERREUR > %s\n", SDL_GetError());
                 SDL_DestroyTexture(texture);
@@ -351,10 +443,28 @@ int main(int argc, char* argv[]) {
             player.rect.y = (int)player.y;
 
             if (player.orientation == 1) {
-                SDL_RenderCopy(renderer, player.textureR, NULL, &player.rect);
+                if (player.currentFrame == 0) SDL_RenderCopy(renderer, player.textureR, NULL, &player.rect);
+                else if (player.currentFrame == 1) SDL_RenderCopy(renderer, player.textureR2, NULL, &player.rect);
+                else SDL_RenderCopy(renderer, player.textureR3, NULL, &player.rect);
+            } else {
+                if (player.currentFrame == 0) SDL_RenderCopy(renderer, player.textureL, NULL, &player.rect);
+                else if (player.currentFrame == 1) SDL_RenderCopy(renderer, player.textureL2, NULL, &player.rect);
+                else SDL_RenderCopy(renderer, player.textureL3, NULL, &player.rect);
             }
-            else if (player.orientation == 2) {
-                SDL_RenderCopy(renderer, player.textureL, NULL, &player.rect);
+
+
+
+            enemie.x += enemie.vx;
+            enemie.y += enemie.vy;
+
+            enemie.rect.x = (int)enemie.x;
+            enemie.rect.y = (int)enemie.y;
+
+            if (enemie.orientation == 1) {
+                SDL_RenderCopy(renderer, enemie.textureR, NULL, &enemie.rect);
+            }
+            else if (enemie.orientation == 2) {
+                SDL_RenderCopy(renderer, enemie.textureL, NULL, &enemie.rect);
             }
 
 
