@@ -532,6 +532,10 @@ int main(int argc, char* argv[]) {
     SDL_DestroyTexture(player.textureL2);
     SDL_DestroyTexture(player.textureR3);
     SDL_DestroyTexture(player.textureL3);
+    for (int i = 0; i < NUM_ENNEMI; i++) {
+        SDL_DestroyTexture(ennemis[i].textureR);
+        SDL_DestroyTexture(ennemis[i].textureL);
+    }
     SDL_DestroyTexture(texture_background);
     SDL_DestroyTexture(texture_object_background);
     TTF_CloseFont(font);
