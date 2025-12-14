@@ -179,26 +179,51 @@ int main(int argc, char* argv[]) {
     player.frameDelay = 100;
 
 
-    Char enemie;
 
-    enemie.moving = 0;
-    enemie.x = 300;
-    enemie.y = 300;
-    enemie.vx = 0;
-    enemie.vy = 0;
-    enemie.speed = 1.5f;
-    enemie.rect.w = 15;
-    enemie.rect.h = 15;
-    enemie.orientation = 1;
+    #define NUM_ENNEMI 20
+    Char ennemis[NUM_ENNEMI];
+
+    for (int i = 0; i < NUM_ENNEMI; i++) {
+        ennemis[i].moving = 0;
+        ennemis[i].vx = 0;
+        ennemis[i].vy = 0;
+        ennemis[i].speed = 1;
+        ennemis[i].rect.w = 15;
+        ennemis[i].rect.h = 15;
+        ennemis[i].orientation = 1;
+
+        int side = rand() % 4;
+
+        switch (side) {
+            case 0:
+                ennemis[i].x = rand() % 800;
+            ennemis[i].y = -(rand () % 1000);;
+            break;
+            case 1:
+                ennemis[i].x = rand() % 800;
+            ennemis[i].y = 800 + rand () % 1000;
+            break;
+            case 2:
+                ennemis[i].x = -(rand () % 1000);
+            ennemis[i].y = rand() % 800;
+            break;
+            case 3:
+                ennemis[i].x = 800 + rand () % 1000;
+            ennemis[i].y = rand() % 800;
+            break;
+        }
 
 
-    SDL_Surface* mechant_right = IMG_Load("assets/images/mechantR.png");
-    enemie.textureR = SDL_CreateTextureFromSurface(renderer, mechant_right);
-    SDL_FreeSurface(mechant_right);
+        SDL_Surface* mechant_right = IMG_Load("assets/images/mechantR.png");
+        ennemis[i].textureR = SDL_CreateTextureFromSurface(renderer, mechant_right);
+        SDL_FreeSurface(mechant_right);
 
-    SDL_Surface* mechant_left = IMG_Load("assets/images/mechantL.png");
-    enemie.textureL = SDL_CreateTextureFromSurface(renderer, mechant_left);
-    SDL_FreeSurface(mechant_left);
+        SDL_Surface* mechant_left = IMG_Load("assets/images/mechantL.png");
+        ennemis[i].textureL = SDL_CreateTextureFromSurface(renderer, mechant_left);
+        SDL_FreeSurface(mechant_left);
+    }
+
+
 
     SDL_Surface* bonhomme_right = IMG_Load("assets/images/bonhommeR.png");
     player.textureR = SDL_CreateTextureFromSurface(renderer, bonhomme_right);
@@ -321,25 +346,34 @@ int main(int argc, char* argv[]) {
         }
 
         if (inGame) {
-            float dx = player.x - enemie.x;
-            float dy = player.y - enemie.y;
+            for (int i = 0; i < NUM_ENNEMI; i++) {
+                float dx = player.x - ennemis[i].x;
+                float dy = player.y - ennemis[i].y;
 
-            float dist = sqrtf(dx*dx + dy*dy);
+                float dist = sqrtf(dx*dx + dy*dy);
 
-            if (dist > 0.1f) {
-                dx /= dist;
-                dy /= dist;
+                if (dist > 0.1f) {
+                    dx /= dist;
+                    dy /= dist;
 
-                enemie.vx = dx * enemie.speed;
-                enemie.vy = dy * enemie.speed;
+                    ennemis[i].vx = dx * ennemis[i].speed;
+                    ennemis[i].vy = dy * ennemis[i].speed;
 
-                enemie.orientation = (dx >= 0) ? 1 : 2;
+                    ennemis[i].orientation = (dx >= 0) ? 1 : 2;
+                }
+
+                ennemis[i].x += ennemis[i].vx;
+                ennemis[i].y += ennemis[i].vy;
+
+                ennemis[i].rect.x = (int)ennemis[i].x;
+                ennemis[i].rect.y = (int)ennemis[i].y;
             }
+
         }
 
 
 
-        SDL_SetRenderDrawColor(renderer, 30, 30, 30, 255); // background
+        SDL_SetRenderDrawColor(renderer, 30, 30, 30, 255);
         SDL_RenderClear(renderer);
 
         int mx, my;
@@ -390,8 +424,6 @@ int main(int argc, char* argv[]) {
 
        }
         if (inGame == 1) {
-
-
 
             if (player.moving) {
                 Uint32 now = SDL_GetTicks();
@@ -453,19 +485,13 @@ int main(int argc, char* argv[]) {
             }
 
 
-
-            enemie.x += enemie.vx;
-            enemie.y += enemie.vy;
-
-            enemie.rect.x = (int)enemie.x;
-            enemie.rect.y = (int)enemie.y;
-
-            if (enemie.orientation == 1) {
-                SDL_RenderCopy(renderer, enemie.textureR, NULL, &enemie.rect);
+            for (int i = 0; i < NUM_ENNEMI; i++) {
+                if (ennemis[i].orientation == 1)
+                    SDL_RenderCopy(renderer, ennemis[i].textureR, NULL, &ennemis[i].rect);
+                else
+                    SDL_RenderCopy(renderer, ennemis[i].textureL, NULL, &ennemis[i].rect);
             }
-            else if (enemie.orientation == 2) {
-                SDL_RenderCopy(renderer, enemie.textureL, NULL, &enemie.rect);
-            }
+
 
 
             if (SDL_QueryTexture(texture_object_background,NULL,NULL, &rect.w, &rect.h) != 0) {
@@ -496,10 +522,23 @@ int main(int argc, char* argv[]) {
     SDL_DestroyTexture(playText);
     SDL_DestroyTexture(quitText);
     SDL_DestroyTexture(texture);
+    SDL_DestroyTexture(textureCouteau);
+    SDL_DestroyTexture(textureCouteauHover);
+    SDL_DestroyTexture(texturePistolet);
+    SDL_DestroyTexture(texturePistoletHover);
+    SDL_DestroyTexture(player.textureR);
+    SDL_DestroyTexture(player.textureL);
+    SDL_DestroyTexture(player.textureR2);
+    SDL_DestroyTexture(player.textureL2);
+    SDL_DestroyTexture(player.textureR3);
+    SDL_DestroyTexture(player.textureL3);
+    SDL_DestroyTexture(texture_background);
+    SDL_DestroyTexture(texture_object_background);
     TTF_CloseFont(font);
     TTF_Quit();
     SDL_DestroyRenderer(renderer);
     SDL_DestroyWindow(window);
+
     SDL_Quit();
 
 
