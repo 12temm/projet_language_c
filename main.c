@@ -505,27 +505,22 @@
                 SDL_RenderCopy(renderer, quitText, NULL, &quitRectText);
             }
             if (inSettings) {
-                // ... votre code d'affichage du fond ou du bouton retour ...
 
-                // Dessin du bouton Moins (Rouge)
                 SDL_SetRenderDrawColor(renderer, 200, 50, 50, 255);
                 SDL_RenderFillRect(renderer, &volMinusButton.rect);
                 SDL_Rect rMinus = {volMinusButton.rect.x + 18, volMinusButton.rect.y + 8, 20, 30};
                 SDL_RenderCopy(renderer, minusText, NULL, &rMinus);
 
-                // Dessin du bouton Plus (Vert)
                 SDL_SetRenderDrawColor(renderer, 50, 200, 50, 255);
                 SDL_RenderFillRect(renderer, &volPlusButton.rect);
                 SDL_Rect rPlus = {volPlusButton.rect.x + 15, volPlusButton.rect.y + 8, 20, 30};
                 SDL_RenderCopy(renderer, plusText, NULL, &rPlus);
 
-                // --- BARRE DE VOLUME ---
-                // Fond de la barre (Gris foncé)
+
                 SDL_Rect barBg = {320, 315, 160, 20};
                 SDL_SetRenderDrawColor(renderer, 80, 80, 80, 255);
                 SDL_RenderFillRect(renderer, &barBg);
 
-                // Niveau actuel (Blanc), largeur calculée selon le volume
                 int barWidth = (volume * 160) / 128;
                 SDL_Rect barLevel = {320, 315, barWidth, 20};
                 SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
