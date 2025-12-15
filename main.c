@@ -41,6 +41,7 @@ int main(int argc, char* argv[]) {
 
     Mix_Music* musicMenu = Mix_LoadMUS("assets/sounds/menu_music.mp3");
     Mix_Music* musicGame = Mix_LoadMUS("assets/sounds/game_music.mp3");
+    Mix_Music* musicDeath = Mix_LoadMUS("assets/sounds/death_music.mp3");
 
     if (!musicMenu) {
         printf("Mix_LoadMUS Error: %s\n", Mix_GetError());
@@ -500,6 +501,8 @@ int main(int argc, char* argv[]) {
 
 
             if (player.health < 0) {
+                Mix_HaltMusic();
+                Mix_PlayMusic(musicDeath, -1);
                 inDeathMenu = 1;
                 inGame = 0;
             }
@@ -517,6 +520,7 @@ int main(int argc, char* argv[]) {
 
     Mix_HaltMusic();
     Mix_FreeMusic(musicMenu);
+    Mix_FreeMusic(musicDeath);
     Mix_CloseAudio();
     SDL_DestroyTexture(playText);
     SDL_DestroyTexture(quitText);
