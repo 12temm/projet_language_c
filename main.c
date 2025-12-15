@@ -174,6 +174,11 @@ int main(int argc, char* argv[]) {
     player.lastFrameTime = 0;
     player.frameDelay = 100;
     player.maxHealth = 3;
+    player.invincible = 0;
+    player.invincibleStart = 0;
+    player.invincibleTime = 1000;
+
+
 
     SDL_Surface* bonhomme_right = IMG_Load("assets/images/bonhommeR.png");
     player.textureR = SDL_CreateTextureFromSurface(renderer, bonhomme_right);
@@ -301,9 +306,12 @@ int main(int argc, char* argv[]) {
                 float dy = player.y - ennemis[i].y;
 
                 float dist = sqrtf(dx*dx + dy*dy);
+                Uint32 now = SDL_GetTicks();
 
-                if (dist < 10) {
+                if (dist < 10 && !player.invincible) {
                     player.health = player.health -1;
+                    player.invincible = 1;
+                    player.invincibleStart = now;
                 }
 
                 if (dist > 0.1f) {
@@ -316,11 +324,20 @@ int main(int argc, char* argv[]) {
                     ennemis[i].orientation = (dx >= 0) ? 1 : 2;
                 }
 
+
+
                 ennemis[i].x += ennemis[i].vx;
                 ennemis[i].y += ennemis[i].vy;
 
                 ennemis[i].rect.x = (int)ennemis[i].x;
                 ennemis[i].rect.y = (int)ennemis[i].y;
+            }
+
+            if (player.invincible) {
+                Uint32 now = SDL_GetTicks();
+                if (now - player.invincibleStart >= player.invincibleTime) {
+                    player.invincible = 0;
+                }
             }
 
         }
@@ -428,7 +445,7 @@ int main(int argc, char* argv[]) {
 
             drawHealthBar(renderer, 20, 20, 200, 20, player.health, player.maxHealth);
 
-            if (player.health < 0) {
+            if (player.health <= 0) {
                 Mix_HaltMusic();
                 Mix_PlayMusic(musicDeath, -1);
                 inDeathMenu = 1;

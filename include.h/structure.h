@@ -25,6 +25,9 @@ typedef struct {
     int currentFrame;
     Uint32 lastFrameTime;
     Uint32 frameDelay;
+    int invincible;
+    Uint32 invincibleStart;
+    Uint32 invincibleTime;
 } Char;
 
 typedef struct {
