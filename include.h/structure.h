@@ -24,3 +24,8 @@ typedef struct {
     Uint32 lastFrameTime;
     Uint32 frameDelay;
 } Char;
+
+typedef struct {
+    int width;
+    int height;
+} Window;
