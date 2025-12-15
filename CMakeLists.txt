@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.15)
 project(MySDLProject C)
 
-set(SDL2_PATH "C:/projet_langage_C/SDL2")
+set(SDL2_PATH "C:/Users/pasca/Documents/projet_language_c-main/SDL2")
 
 add_executable(MySDLProject main.c)
 
