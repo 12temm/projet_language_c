@@ -95,6 +95,26 @@ int main(int argc, char* argv[]) {
     SDL_FreeSurface(object_background);
     texture_background_check(window, renderer, texture, texture_object_background);
 
+
+
+
+    SDL_Surface* gameoverSurface = IMG_Load("assets/images/game_over.png");
+    if (!gameoverSurface) {
+        printf("IMG_Load error: %s\n", IMG_GetError());
+    }
+    SDL_Texture* texture_gameover = SDL_CreateTextureFromSurface(renderer, gameoverSurface);
+    SDL_FreeSurface(gameoverSurface);
+
+    SDL_Rect rect_gameover;
+    rect_gameover.x = 0;
+    rect_gameover.y = 0;
+    rect_gameover.w = w_window;
+    rect_gameover.h = h_window;
+
+
+
+
+
     #define NUM_ENNEMI 20
     Char ennemis[NUM_ENNEMI];
 
@@ -417,9 +437,7 @@ int main(int argc, char* argv[]) {
         }
 
         if (inDeathMenu == 1) {
-            SDL_Surface* gameover = IMG_Load("assets/images/game_over.png");
-            SDL_Texture* texture_gameover = SDL_CreateTextureFromSurface(renderer, gameover);
-            SDL_RenderCopy(renderer, texture_gameover, NULL, &rect);
+            SDL_RenderCopy(renderer, texture_gameover, NULL, &rect_gameover);
         }
 
         SDL_RenderPresent(renderer);
