@@ -6,13 +6,27 @@
 #include <math.h>
 
 
-#include "structure.h"
+#include "include.h/structure.h"
 
 
 int isMouseInside(SDL_Rect rect, int x, int y) {
     return (x >= rect.x && x <= rect.x + rect.w &&
             y >= rect.y && y <= rect.y + rect.h);
 }
+
+void drawHealthBar(SDL_Renderer* renderer, int x, int y, int w, int h, int health, int maxHealth) {
+    SDL_Rect bgRect = {x, y, w, h};
+    SDL_SetRenderDrawColor(renderer, 200, 0, 0, 255);
+    SDL_RenderFillRect(renderer, &bgRect);
+
+    if (health > 0) {
+        int barWidth = (int)((float)health / maxHealth * w);
+        SDL_Rect healthRect = {x, y, barWidth, h};
+        SDL_SetRenderDrawColor(renderer, 0, 200, 0, 255);
+        SDL_RenderFillRect(renderer, &healthRect);
+    }
+}
+
 
 int main(int argc, char* argv[]) {
 
@@ -150,7 +164,7 @@ int main(int argc, char* argv[]) {
 
     Char player;
 
-    player.health = 1;
+    player.health = 3;
     player.moving = 0;
     player.x = 300;
     player.y = 300;
@@ -498,6 +512,7 @@ int main(int argc, char* argv[]) {
             rect.y = (800 -rect.h)/2;
 
             SDL_RenderCopy(renderer, texture_object_background, NULL, &rect);
+            drawHealthBar(renderer, 20, 20, 200, 20, player.health, player.maxHealth);
 
 
             if (player.health < 0) {
