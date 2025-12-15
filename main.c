@@ -79,8 +79,8 @@
 
         Mix_Music* musicMenu = Mix_LoadMUS("assets/sounds/menu_music.mp3");
         Mix_Music* musicGame = Mix_LoadMUS("assets/sounds/game_music.mp3");
-        int volume = 64;
-        Mix_VolumeMusic(volume);
+
+
 
         if (!musicMenu) {
             printf("Mix_LoadMUS Error: %s\n", Mix_GetError());
@@ -308,6 +308,20 @@
         SDL_Texture* backText = SDL_CreateTextureFromSurface(renderer, backSurface);
         SDL_FreeSurface(backSurface);
 
+        int volume = 64; // Volume initial à 50% (max 128)
+        Mix_VolumeMusic(volume);
+
+        Button volMinusButton = {{250, 300, 50, 50}, {200, 50, 50, 255}, "-", 1};
+        Button volPlusButton  = {{500, 300, 50, 50}, {50, 200, 50, 255}, "+", 1};
+
+        SDL_Surface* minusSurf = TTF_RenderText_Blended(font, volMinusButton.label, color);
+        SDL_Texture* minusText = SDL_CreateTextureFromSurface(renderer, minusSurf);
+        SDL_FreeSurface(minusSurf);
+
+        SDL_Surface* plusSurf = TTF_RenderText_Blended(font, volPlusButton.label, color);
+        SDL_Texture* plusText = SDL_CreateTextureFromSurface(renderer, plusSurf);
+        SDL_FreeSurface(plusSurf);
+
         int running = 1;
         SDL_Event e;
 
@@ -375,15 +389,26 @@
                         quitButton.visible = 0;
                         settingButton.visible = 0;
                     }
-                    else if (inSettings && isMouseInside(backButton.rect, mx, my)) {
-                        printf("Retour au menu\n");
-                        inSettings = 0;
-                        inMenu = 1;
 
-
-                        playButton.visible = 1;
-                        quitButton.visible = 1;
-                        settingButton.visible = 1;
+                    else if (inSettings) {
+                        if (isMouseInside(backButton.rect, mx, my)) {
+                            printf("Retour au menu\n");
+                            inSettings = 0;
+                            inMenu = 1;
+                            playButton.visible = 1;
+                            quitButton.visible = 1;
+                            settingButton.visible = 1;
+                        }
+                        else if (isMouseInside(volMinusButton.rect, mx, my)) {
+                            volume -= 16;
+                            if (volume < 0) volume = 0;
+                            Mix_VolumeMusic(volume);
+                        }
+                        else if (isMouseInside(volPlusButton.rect, mx, my)) {
+                            volume += 16;
+                            if (volume > 128) volume = 128;
+                            Mix_VolumeMusic(volume);
+                        }
                     }
                     
                     else if (inMenu2 && isMouseInside(swordButton.rect, mx, my)) {
@@ -479,7 +504,33 @@
                 quitRectText.y = quitButton.rect.y + (quitButton.rect.h - quitRectText.h) / 2;
                 SDL_RenderCopy(renderer, quitText, NULL, &quitRectText);
             }
+            if (inSettings) {
+                // ... votre code d'affichage du fond ou du bouton retour ...
 
+                // Dessin du bouton Moins (Rouge)
+                SDL_SetRenderDrawColor(renderer, 200, 50, 50, 255);
+                SDL_RenderFillRect(renderer, &volMinusButton.rect);
+                SDL_Rect rMinus = {volMinusButton.rect.x + 18, volMinusButton.rect.y + 8, 20, 30};
+                SDL_RenderCopy(renderer, minusText, NULL, &rMinus);
+
+                // Dessin du bouton Plus (Vert)
+                SDL_SetRenderDrawColor(renderer, 50, 200, 50, 255);
+                SDL_RenderFillRect(renderer, &volPlusButton.rect);
+                SDL_Rect rPlus = {volPlusButton.rect.x + 15, volPlusButton.rect.y + 8, 20, 30};
+                SDL_RenderCopy(renderer, plusText, NULL, &rPlus);
+
+                // --- BARRE DE VOLUME ---
+                // Fond de la barre (Gris foncé)
+                SDL_Rect barBg = {320, 315, 160, 20};
+                SDL_SetRenderDrawColor(renderer, 80, 80, 80, 255);
+                SDL_RenderFillRect(renderer, &barBg);
+
+                // Niveau actuel (Blanc), largeur calculée selon le volume
+                int barWidth = (volume * 160) / 128;
+                SDL_Rect barLevel = {320, 315, barWidth, 20};
+                SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
+                SDL_RenderFillRect(renderer, &barLevel);
+            }
            if (inMenu2 == 1) {
             if (isMouseInside(swordButton.rect, mx, my)) {
                 SDL_RenderCopy(renderer, textureCouteauHover, NULL, &swordButton.rect);
