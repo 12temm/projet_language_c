@@ -5,31 +5,9 @@
 #include <stdio.h>
 #include <math.h>
 
-typedef struct {
-    SDL_Rect rect;
-    SDL_Color color;
-    const char* label;
-    int visible;
-} Button;
 
-typedef struct {
-    float x, y;
-    float vx, vy;
-    float speed;
-    int orientation;
-    int moving;
-    int health;
-    SDL_Texture* textureR;
-    SDL_Texture* textureL;
-    SDL_Texture* textureR2;
-    SDL_Texture* textureL2;
-    SDL_Texture* textureR3;
-    SDL_Texture* textureL3;
-    SDL_Rect rect;
-    int currentFrame;
-    Uint32 lastFrameTime;
-    Uint32 frameDelay;
-} Char;
+#include "structure.h"
+
 
 int isMouseInside(SDL_Rect rect, int x, int y) {
     return (x >= rect.x && x <= rect.x + rect.w &&
@@ -41,7 +19,6 @@ int main(int argc, char* argv[]) {
     int inMenu = 1;
     int inMenu2 = 0;
     int inGame = 0;
-    int inDeadMenu = 0;
 
     if (SDL_Init(SDL_INIT_AUDIO) < 0) {
         printf("SDL_Init Error: %s\n", SDL_GetError());
@@ -122,10 +99,6 @@ int main(int argc, char* argv[]) {
     SDL_Texture* texturePistoletHover = SDL_CreateTextureFromSurface(renderer, surfacePistoletHover);
     SDL_FreeSurface(surfacePistoletHover);
 
-    SDL_Surface* gameover = IMG_Load("assets/images/game_over.png");
-    SDL_Texture *texture_gameover = SDL_CreateTextureFromSurface(renderer, gameover);
-    SDL_FreeSurface(gameover);
-
     SDL_Surface* background = IMG_Load("assets/images/background_game.png");
     if (background == NULL) {
         SDL_Log("ERREUR IMG_Load Error: %s\n", IMG_GetError());
@@ -171,7 +144,6 @@ int main(int argc, char* argv[]) {
 
     Char player;
 
-    player.health = 1;
     player.moving = 0;
     player.x = 300;
     player.y = 300;
@@ -187,7 +159,7 @@ int main(int argc, char* argv[]) {
 
 
 
-    #define NUM_ENNEMI 50
+    #define NUM_ENNEMI 20
     Char ennemis[NUM_ENNEMI];
 
     for (int i = 0; i < NUM_ENNEMI; i++) {
@@ -359,14 +331,6 @@ int main(int argc, char* argv[]) {
 
                 float dist = sqrtf(dx*dx + dy*dy);
 
-                if (dist < 10) {
-                    player.health -= 1;
-                }
-
-                if (player.health <= 0) {
-                    printf("mort");
-                }
-
                 if (dist > 0.1f) {
                     dx /= dist;
                     dy /= dist;
@@ -383,7 +347,6 @@ int main(int argc, char* argv[]) {
                 ennemis[i].rect.x = (int)ennemis[i].x;
                 ennemis[i].rect.y = (int)ennemis[i].y;
             }
-
 
         }
 
@@ -440,7 +403,6 @@ int main(int argc, char* argv[]) {
 
        }
         if (inGame == 1) {
-
 
             if (player.moving) {
                 Uint32 now = SDL_GetTicks();
@@ -526,20 +488,8 @@ int main(int argc, char* argv[]) {
 
             SDL_RenderCopy(renderer, texture_object_background, NULL, &rect);
 
-
-            if (player.health <= 0) {
-                inGame = 0;
-                inDeadMenu = 1;
-
-            }
-
         }
 
-
-
-        if (inDeadMenu == 1) {
-            SDL_RenderCopy(renderer, texture_gameover, NULL, &rect);
-        }
 
         SDL_RenderPresent(renderer);
         SDL_Delay(16);
