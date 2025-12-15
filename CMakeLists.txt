@@ -5,6 +5,15 @@ set(SDL2_PATH "C:/projet_langage_C/SDL2")
 
 add_executable(MySDLProject main.c
         include.h/structure.h
+        include.c/init_global.c
+        include.h/init_global.h
+        include.c/menu.c
+        include.h/menu.h
+        include.c/menu_weapons.c
+        include.h/menu_weapons.h
+        include.c/background.c
+        include.h/background.h
+        include.c/entity.c
 )
 
 target_include_directories(MySDLProject PRIVATE

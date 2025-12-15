@@ -13,6 +13,8 @@ typedef struct {
     float speed;
     int orientation;
     int moving;
+    int health;
+    int maxHealth;
     SDL_Texture* textureR;
     SDL_Texture* textureL;
     SDL_Texture* textureR2;
@@ -28,4 +30,4 @@ typedef struct {
 typedef struct {
     int width;
     int height;
-} Window;
+} size;

@@ -7,6 +7,10 @@
 
 
 #include "structure.h"
+#include "init_global.h"
+#include "menu.h"
+#include "menu_weapons.h"
+#include "background.h"
 
 
 int isMouseInside(SDL_Rect rect, int x, int y) {
@@ -14,69 +18,60 @@ int isMouseInside(SDL_Rect rect, int x, int y) {
             y >= rect.y && y <= rect.y + rect.h);
 }
 
+void drawHealthBar(SDL_Renderer* renderer, int x, int y, int w, int h, int health, int maxHealth) {
+    SDL_Rect bgRect = {x, y, w, h};
+    SDL_SetRenderDrawColor(renderer, 200, 0, 0, 255);
+    SDL_RenderFillRect(renderer, &bgRect);
+
+    if (health > 0) {
+        int barWidth = (int)((float)health / maxHealth * w);
+        SDL_Rect healthRect = {x, y, barWidth, h};
+        SDL_SetRenderDrawColor(renderer, 0, 200, 0, 255);
+        SDL_RenderFillRect(renderer, &healthRect);
+    }
+}
+
 int main(int argc, char* argv[]) {
 
     int inMenu = 1;
     int inMenu2 = 0;
     int inGame = 0;
+    int inDeathMenu = 0;
 
-    if (SDL_Init(SDL_INIT_AUDIO) < 0) {
-        printf("SDL_Init Error: %s\n", SDL_GetError());
-        return 1;
-    }
-
-    if (IMG_Init(IMG_INIT_PNG) == 0) {
-        printf("IMG_Init Error: %s\n", IMG_GetError());
-        SDL_Quit();
-        return 1;
-    }
+    TTF_Init();
+    TTF_Font* font = TTF_OpenFont("assets/fonts/Open_Sans/OpenSans-VariableFont_wdth,wght.ttf", 24);
+    init_global(font);
 
 
-    if (Mix_OpenAudio(44100, MIX_DEFAULT_FORMAT, 2, 2048) < 0) {
-        printf("Mix_OpenAudio Error: %s\n", Mix_GetError());
-        SDL_Quit();
-        return 1;
-    }
-
-    Mix_Music* musicMenu = Mix_LoadMUS("assets/sounds/menu_music.mp3");
     Mix_Music* musicGame = Mix_LoadMUS("assets/sounds/game_music.mp3");
 
+    Mix_Music* musicMenu = Mix_LoadMUS("assets/sounds/menu_music.mp3");
     if (!musicMenu) {
         printf("Mix_LoadMUS Error: %s\n", Mix_GetError());
         Mix_CloseAudio();
         SDL_Quit();
         return 1;
     }
-
     printf("Playing music...\n");
     Mix_PlayMusic(musicMenu, -1);
 
-    if (SDL_Init(SDL_INIT_VIDEO) != 0) {
-        printf("SDL_Init Error: %s\n", SDL_GetError());
-        return 1;
-    }
 
-    int w_window = 800;
-    int h_window = 800;
+
+    size window_size;
+
+    window_size.height = 800;
+    window_size.width = 800;
+
+    int w_window= window_size.width;
+    int h_window= window_size.height;
+
     SDL_Window* window = SDL_CreateWindow("SDL2 Menu",
                                           SDL_WINDOWPOS_CENTERED,
                                           SDL_WINDOWPOS_CENTERED,
                                           w_window, h_window,
                                           SDL_WINDOW_SHOWN);
+    window_error(window);
 
-    if (!window) {
-        printf("SDL_CreateWindow Error: %s\n", SDL_GetError());
-        SDL_Quit();
-        return 1;
-    }
-
-    TTF_Init();
-
-    TTF_Font* font = TTF_OpenFont("assets/fonts/Open_Sans/OpenSans-VariableFont_wdth,wght.ttf", 24);
-    if (!font) {
-        printf("Failed to load font: %s\n", TTF_GetError());
-        return 1;
-    }
 
     SDL_Color color = { 255, 255, 255 };
 
@@ -85,79 +80,20 @@ int main(int argc, char* argv[]) {
     SDL_Texture* texture = SDL_CreateTextureFromSurface(renderer, surface);
     SDL_FreeSurface(surface);
 
-    SDL_Surface* surfaceCouteau = IMG_Load("assets/images/couteau.png");
-    SDL_Texture* textureCouteau = SDL_CreateTextureFromSurface(renderer, surfaceCouteau);
-    SDL_FreeSurface(surfaceCouteau);
-    SDL_Surface* surfaceCouteauHover = IMG_Load("assets/images/couteauhover.png");
-    SDL_Texture* textureCouteauHover = SDL_CreateTextureFromSurface(renderer, surfaceCouteauHover);
-    SDL_FreeSurface(surfaceCouteauHover);
+    Mix_Music* musicDeath = Mix_LoadMUS("assets/sounds/death_music.mp3");
 
-    SDL_Surface* surfacePistolet = IMG_Load("assets/images/pistolet.png");
-    SDL_Texture* texturePistolet = SDL_CreateTextureFromSurface(renderer, surfacePistolet);
-    SDL_FreeSurface(surfacePistolet);
-    SDL_Surface* surfacePistoletHover = IMG_Load("assets/images/pistolethover.png");
-    SDL_Texture* texturePistoletHover = SDL_CreateTextureFromSurface(renderer, surfacePistoletHover);
-    SDL_FreeSurface(surfacePistoletHover);
 
     SDL_Surface* background = IMG_Load("assets/images/background_game.png");
-    if (background == NULL) {
-        SDL_Log("ERREUR IMG_Load Error: %s\n", IMG_GetError());
-        SDL_DestroyTexture(texture);
-        SDL_DestroyRenderer(renderer);
-        SDL_DestroyWindow(window);
-        SDL_Quit();
-        exit(EXIT_FAILURE);
-    }
-
+    surface_background_check(window, renderer, texture, background);
     SDL_Texture *texture_background = SDL_CreateTextureFromSurface(renderer, background);
     SDL_FreeSurface(background);
-    if(texture_background == NULL) {
-        SDL_Log("ERREUR IMG_Load Error: %s\n", IMG_GetError());
-        SDL_DestroyTexture(texture);
-        SDL_DestroyRenderer(renderer);
-        SDL_DestroyWindow(window);
-        SDL_Quit();
-        exit(EXIT_FAILURE);
-    }
+    texture_background_check(window, renderer, texture, texture_background);
 
     SDL_Surface* object_background = IMG_Load("assets/images/object.png");
-    if (object_background == NULL) {
-        SDL_Log("ERREUR IMG_Load Error: %s\n", IMG_GetError());
-        SDL_DestroyTexture(texture);
-        SDL_DestroyRenderer(renderer);
-        SDL_DestroyWindow(window);
-        SDL_Quit();
-        exit(EXIT_FAILURE);
-    }
-
+    surface_background_check(window, renderer, texture, object_background);
     SDL_Texture *texture_object_background = SDL_CreateTextureFromSurface(renderer, object_background);
     SDL_FreeSurface(object_background);
-    if(texture_object_background == NULL) {
-        SDL_Log("ERREUR IMG_Load Error: %s\n", IMG_GetError());
-        SDL_DestroyTexture(texture);
-        SDL_DestroyRenderer(renderer);
-        SDL_DestroyWindow(window);
-        SDL_Quit();
-        exit(EXIT_FAILURE);
-    }
-
-
-    Char player;
-
-    player.moving = 0;
-    player.x = 300;
-    player.y = 300;
-    player.vx = 0;
-    player.vy = 0;
-    player.speed = 2;
-    player.rect.w = 20;
-    player.rect.h = 20;
-    player.orientation = 1;
-    player.currentFrame = 0;
-    player.lastFrameTime = 0;
-    player.frameDelay = 100;
-
-
+    texture_background_check(window, renderer, texture, texture_object_background);
 
     #define NUM_ENNEMI 20
     Char ennemis[NUM_ENNEMI];
@@ -202,7 +138,22 @@ int main(int argc, char* argv[]) {
         SDL_FreeSurface(mechant_left);
     }
 
+    Char player;
 
+    player.health = 3;
+    player.moving = 0;
+    player.x = 300;
+    player.y = 300;
+    player.vx = 0;
+    player.vy = 0;
+    player.speed = 2;
+    player.rect.w = 20;
+    player.rect.h = 20;
+    player.orientation = 1;
+    player.currentFrame = 0;
+    player.lastFrameTime = 0;
+    player.frameDelay = 100;
+    player.maxHealth = 3;
 
     SDL_Surface* bonhomme_right = IMG_Load("assets/images/bonhommeR.png");
     player.textureR = SDL_CreateTextureFromSurface(renderer, bonhomme_right);
@@ -239,12 +190,6 @@ int main(int argc, char* argv[]) {
 
     Button playButton = {{220, 150, 200, 60}, {0, 200, 0, 255}, "Play",1};
     Button quitButton = {{220, 250, 200, 60}, {200, 0, 0, 255}, "Quit",1};
-    Button swordButton ={{100, 100, 200, 200}, {0, 200, 0, 255}, "Sword",1};
-    Button gunButton ={{300, 100, 200, 200}, {0, 200, 0, 255}, "Gun",1};
-
-
-
-    SDL_Rect rect;
 
     SDL_Surface* playSurface = TTF_RenderText_Blended(font, playButton.label, color);
     SDL_Texture* playText = SDL_CreateTextureFromSurface(renderer, playSurface);
@@ -253,6 +198,10 @@ int main(int argc, char* argv[]) {
     SDL_Surface* quitSurface = TTF_RenderText_Blended(font, quitButton.label, color);
     SDL_Texture* quitText = SDL_CreateTextureFromSurface(renderer, quitSurface);
     SDL_FreeSurface(quitSurface);
+
+
+    SDL_Rect rect;
+
 
     int running = 1;
     SDL_Event e;
@@ -297,6 +246,8 @@ int main(int argc, char* argv[]) {
             if (e.type == SDL_MOUSEBUTTONDOWN && e.button.button == SDL_BUTTON_LEFT) {
                 int mx = e.button.x;
                 int my = e.button.y;
+                Button swordButton ={{100, 100, 200, 200}, {0, 200, 0, 255}, "Sword",1};
+                Button gunButton ={{300, 100, 200, 200}, {0, 200, 0, 255}, "Gun",1};
 
                 if (inMenu && isMouseInside(playButton.rect, mx, my)) {
                     inMenu = 0;
@@ -330,6 +281,10 @@ int main(int argc, char* argv[]) {
                 float dy = player.y - ennemis[i].y;
 
                 float dist = sqrtf(dx*dx + dy*dy);
+
+                if (dist < 10) {
+                    player.health = player.health -1;
+                }
 
                 if (dist > 0.1f) {
                     dx /= dist;
@@ -389,18 +344,7 @@ int main(int argc, char* argv[]) {
         }
 
        if (inMenu2 == 1) {
-        if (isMouseInside(swordButton.rect, mx, my)) {
-            SDL_RenderCopy(renderer, textureCouteauHover, NULL, &swordButton.rect);
-        } else {
-            SDL_RenderCopy(renderer, textureCouteau, NULL, &swordButton.rect);
-        }
-
-        if (isMouseInside(gunButton.rect, mx, my)) {
-            SDL_RenderCopy(renderer, texturePistoletHover, NULL, &gunButton.rect);
-        } else {
-            SDL_RenderCopy(renderer, texturePistolet, NULL, &gunButton.rect);
-        }
-
+           choose_weapon(window, font, color, renderer, mx, my);
        }
         if (inGame == 1) {
 
@@ -414,20 +358,9 @@ int main(int argc, char* argv[]) {
                 player.currentFrame = 0;
             }
 
-            if (SDL_QueryTexture(texture_background,NULL,NULL, &rect.w, &rect.h) != 0) {
-                SDL_Log("ERREUR > %s\n", SDL_GetError());
-                SDL_DestroyTexture(texture);
-                SDL_DestroyRenderer(renderer);
-                SDL_DestroyWindow(window);
-                IMG_Quit();
-                SDL_Quit();
-                exit(EXIT_FAILURE);
-            }
 
-            rect.x = (800 -rect.w)/2;
-            rect.y = (800 -rect.h)/2;
 
-            SDL_RenderCopy(renderer, texture_background, NULL, &rect);
+            show_background(window, renderer, texture,texture_background, rect);
 
 
             double border_x = w_window*3.7/100;
@@ -471,25 +404,27 @@ int main(int argc, char* argv[]) {
                     SDL_RenderCopy(renderer, ennemis[i].textureL, NULL, &ennemis[i].rect);
             }
 
+            show_background(window, renderer, texture,texture_object_background, rect);
 
+            drawHealthBar(renderer, 20, 20, 200, 20, player.health, player.maxHealth);
 
-            if (SDL_QueryTexture(texture_object_background,NULL,NULL, &rect.w, &rect.h) != 0) {
-                SDL_Log("ERREUR > %s\n", SDL_GetError());
-                SDL_DestroyTexture(texture);
-                SDL_DestroyRenderer(renderer);
-                SDL_DestroyWindow(window);
-                IMG_Quit();
-                SDL_Quit();
-                exit(EXIT_FAILURE);
+            if (player.health < 0) {
+                Mix_HaltMusic();
+                Mix_PlayMusic(musicDeath, -1);
+                inDeathMenu = 1;
+                inGame = 0;
             }
-
-            rect.x = (800 -rect.w)/2;
-            rect.y = (800 -rect.h)/2;
-
-            SDL_RenderCopy(renderer, texture_object_background, NULL, &rect);
-
         }
 
+        if (inDeathMenu == 1) {
+            SDL_Surface* gameover = IMG_Load("assets/images/game_over.png");
+            SDL_Texture* texture_gameover = SDL_CreateTextureFromSurface(renderer, gameover);
+            SDL_QueryTexture(texture_gameover,NULL,NULL, &rect.w, &rect.h);
+            printf("Hello,death");
+            rect.x = (800 -rect.w);
+            rect.y = (800 -rect.h);
+            SDL_RenderCopy(renderer, texture_gameover, NULL, &rect);
+        }
 
         SDL_RenderPresent(renderer);
         SDL_Delay(16);
@@ -501,10 +436,7 @@ int main(int argc, char* argv[]) {
     SDL_DestroyTexture(playText);
     SDL_DestroyTexture(quitText);
     SDL_DestroyTexture(texture);
-    SDL_DestroyTexture(textureCouteau);
-    SDL_DestroyTexture(textureCouteauHover);
-    SDL_DestroyTexture(texturePistolet);
-    SDL_DestroyTexture(texturePistoletHover);
+    destroy_menu_weapons(window,font,color);
     SDL_DestroyTexture(player.textureR);
     SDL_DestroyTexture(player.textureL);
     SDL_DestroyTexture(player.textureR2);
@@ -515,8 +447,7 @@ int main(int argc, char* argv[]) {
         SDL_DestroyTexture(ennemis[i].textureR);
         SDL_DestroyTexture(ennemis[i].textureL);
     }
-    SDL_DestroyTexture(texture_background);
-    SDL_DestroyTexture(texture_object_background);
+    destroy_background(window,renderer,texture);
     TTF_CloseFont(font);
     TTF_Quit();
     SDL_DestroyRenderer(renderer);
