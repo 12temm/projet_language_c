@@ -13,6 +13,7 @@ typedef struct {
     float speed;
     int orientation;
     int moving;
+    int health;
     SDL_Texture* textureR;
     SDL_Texture* textureL;
     SDL_Texture* textureR2;
