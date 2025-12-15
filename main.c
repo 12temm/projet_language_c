@@ -19,6 +19,7 @@ int main(int argc, char* argv[]) {
     int inMenu = 1;
     int inMenu2 = 0;
     int inGame = 0;
+    int inDeathMenu = 0;
 
     if (SDL_Init(SDL_INIT_AUDIO) < 0) {
         printf("SDL_Init Error: %s\n", SDL_GetError());
@@ -99,6 +100,10 @@ int main(int argc, char* argv[]) {
     SDL_Texture* texturePistoletHover = SDL_CreateTextureFromSurface(renderer, surfacePistoletHover);
     SDL_FreeSurface(surfacePistoletHover);
 
+    SDL_Surface* gameover = IMG_Load("assets/images/game_over.png");
+    SDL_Texture *texture_gameover = SDL_CreateTextureFromSurface(renderer, gameover);
+
+
     SDL_Surface* background = IMG_Load("assets/images/background_game.png");
     if (background == NULL) {
         SDL_Log("ERREUR IMG_Load Error: %s\n", IMG_GetError());
@@ -144,6 +149,7 @@ int main(int argc, char* argv[]) {
 
     Char player;
 
+    player.health = 1;
     player.moving = 0;
     player.x = 300;
     player.y = 300;
@@ -331,6 +337,10 @@ int main(int argc, char* argv[]) {
 
                 float dist = sqrtf(dx*dx + dy*dy);
 
+                if (dist < 10) {
+                    player.health = player.health -1;
+                }
+
                 if (dist > 0.1f) {
                     dx /= dist;
                     dy /= dist;
@@ -488,7 +498,17 @@ int main(int argc, char* argv[]) {
 
             SDL_RenderCopy(renderer, texture_object_background, NULL, &rect);
 
+
+            if (player.health < 0) {
+                inDeathMenu = 1;
+                inGame = 0;
+            }
+
         }
+        if (inDeathMenu == 1) {
+            SDL_RenderCopy(renderer, texture_gameover, NULL, &rect);
+        }
+
 
 
         SDL_RenderPresent(renderer);
