@@ -95,6 +95,26 @@ int main(int argc, char* argv[]) {
     SDL_FreeSurface(object_background);
     texture_background_check(window, renderer, texture, texture_object_background);
 
+
+
+
+    SDL_Surface* gameoverSurface = IMG_Load("assets/images/game_over.png");
+    if (!gameoverSurface) {
+        printf("IMG_Load error: %s\n", IMG_GetError());
+    }
+    SDL_Texture* texture_gameover = SDL_CreateTextureFromSurface(renderer, gameoverSurface);
+    SDL_FreeSurface(gameoverSurface);
+
+    SDL_Rect rect_gameover;
+    rect_gameover.x = 0;
+    rect_gameover.y = 0;
+    rect_gameover.w = w_window;
+    rect_gameover.h = h_window;
+
+
+
+
+
     #define NUM_ENNEMI 20
     Char ennemis[NUM_ENNEMI];
 
@@ -154,6 +174,11 @@ int main(int argc, char* argv[]) {
     player.lastFrameTime = 0;
     player.frameDelay = 100;
     player.maxHealth = 3;
+    player.invincible = 0;
+    player.invincibleStart = 0;
+    player.invincibleTime = 1000;
+
+
 
     SDL_Surface* bonhomme_right = IMG_Load("assets/images/bonhommeR.png");
     player.textureR = SDL_CreateTextureFromSurface(renderer, bonhomme_right);
@@ -281,9 +306,12 @@ int main(int argc, char* argv[]) {
                 float dy = player.y - ennemis[i].y;
 
                 float dist = sqrtf(dx*dx + dy*dy);
+                Uint32 now = SDL_GetTicks();
 
-                if (dist < 10) {
+                if (dist < 10 && !player.invincible) {
                     player.health = player.health -1;
+                    player.invincible = 1;
+                    player.invincibleStart = now;
                 }
 
                 if (dist > 0.1f) {
@@ -296,11 +324,20 @@ int main(int argc, char* argv[]) {
                     ennemis[i].orientation = (dx >= 0) ? 1 : 2;
                 }
 
+
+
                 ennemis[i].x += ennemis[i].vx;
                 ennemis[i].y += ennemis[i].vy;
 
                 ennemis[i].rect.x = (int)ennemis[i].x;
                 ennemis[i].rect.y = (int)ennemis[i].y;
+            }
+
+            if (player.invincible) {
+                Uint32 now = SDL_GetTicks();
+                if (now - player.invincibleStart >= player.invincibleTime) {
+                    player.invincible = 0;
+                }
             }
 
         }
@@ -408,7 +445,7 @@ int main(int argc, char* argv[]) {
 
             drawHealthBar(renderer, 20, 20, 200, 20, player.health, player.maxHealth);
 
-            if (player.health < 0) {
+            if (player.health <= 0) {
                 Mix_HaltMusic();
                 Mix_PlayMusic(musicDeath, -1);
                 inDeathMenu = 1;
@@ -417,13 +454,7 @@ int main(int argc, char* argv[]) {
         }
 
         if (inDeathMenu == 1) {
-            SDL_Surface* gameover = IMG_Load("assets/images/game_over.png");
-            SDL_Texture* texture_gameover = SDL_CreateTextureFromSurface(renderer, gameover);
-            SDL_QueryTexture(texture_gameover,NULL,NULL, &rect.w, &rect.h);
-            printf("Hello,death");
-            rect.x = (800 -rect.w);
-            rect.y = (800 -rect.h);
-            SDL_RenderCopy(renderer, texture_gameover, NULL, &rect);
+            SDL_RenderCopy(renderer, texture_gameover, NULL, &rect_gameover);
         }
 
         SDL_RenderPresent(renderer);
