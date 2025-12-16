@@ -265,6 +265,11 @@ int main(int argc, char* argv[]) {
 
     Button playButton = {{220, 150, 200, 60}, {0, 200, 0, 255}, "Play",1};
     Button quitButton = {{220, 250, 200, 60}, {200, 0, 0, 255}, "Quit",1};
+    Button replayButton = {{570, 600, 200, 60}, {0, 200, 0, 255}, "Reesayer",1};
+
+    SDL_Surface* replaySurface = TTF_RenderText_Blended(font, replayButton.label, color);
+    SDL_Texture* replayText = SDL_CreateTextureFromSurface(renderer, replaySurface);
+    SDL_FreeSurface(replaySurface);
 
     SDL_Surface* playSurface = TTF_RenderText_Blended(font, playButton.label, color);
     SDL_Texture* playText = SDL_CreateTextureFromSurface(renderer, playSurface);
@@ -330,6 +335,7 @@ int main(int argc, char* argv[]) {
                     playButton.visible = 0;
                     quitButton.visible = 0;
 
+
                     Mix_HaltMusic();
                     Mix_PlayMusic(musicGame, -1);
                 }
@@ -351,7 +357,54 @@ int main(int argc, char* argv[]) {
                 else if ((isMouseInside(quitButton.rect, mx, my))&& (inMenu)) {
                     running = 0;
                 }
-            }
+
+                else if ((isMouseInside(replayButton.rect, mx, my))&& (inDeathMenu)){
+
+                        inDeathMenu = 0;
+                        inGame = 1;
+
+                        player.health = player.maxHealth;
+                        player.x = 300;
+                        player.y = 300;
+                        player.vx = 0;
+                        player.vy = 0;
+                        player.invincible = 0;
+
+                        for (int i = 0; i < NUM_ENNEMI; i++) {
+                            ennemis[i].moving = 0;
+                            ennemis[i].speed = 1;
+                            ennemis[i].rect.w = 15;
+                            ennemis[i].rect.h = 15;
+
+                            int side = rand() % 4;
+                            switch (side) {
+                                case 0:
+                                    ennemis[i].x = rand() % 800;
+                                ennemis[i].y = -(rand() % 1000);
+                                break;
+                                case 1:
+                                    ennemis[i].x = rand() % 800;
+                                ennemis[i].y = 800 + rand() % 1000;
+                                break;
+                                case 2:
+                                    ennemis[i].x = -(rand() % 1000);
+                                ennemis[i].y = rand() % 800;
+                                break;
+                                case 3:
+                                    ennemis[i].x = 800 + rand() % 1000;
+                                ennemis[i].y = rand() % 800;
+                                break;
+                            }
+
+                            ennemis[i].rect.x = ennemis[i].x;
+                            ennemis[i].rect.y = ennemis[i].y;
+                        }
+
+                        Mix_HaltMusic();
+                        Mix_PlayMusic(musicGame, -1);
+                    }
+
+                }
         }
 
         if (inGame) {
@@ -571,6 +624,22 @@ int main(int argc, char* argv[]) {
 
         if (inDeathMenu == 1) {
             SDL_RenderCopy(renderer, texture_gameover, NULL, &rect_gameover);
+            replayButton.visible = 1;
+
+            if (isMouseInside(replayButton.rect, mx, my))
+                SDL_SetRenderDrawColor(renderer, 200, 0, 200, 255);
+            else
+                SDL_SetRenderDrawColor(renderer, 50, 0, 50, 255);
+            SDL_RenderFillRect(renderer, &replayButton.rect);
+
+            SDL_Rect replayRectText = {0, 0, 0, 0};
+            SDL_QueryTexture(replayText, NULL, NULL, &replayRectText.w, &replayRectText.h);
+            replayRectText.x = replayButton.rect.x + (replayButton.rect.w - replayRectText.w) / 2;
+            replayRectText.y = replayButton.rect.y + (replayButton.rect.h - replayRectText.h) / 2;
+            SDL_RenderCopy(renderer, replayText, NULL, &replayRectText);
+
+        } else {
+            replayButton.visible = 0;
         }
 
         SDL_RenderPresent(renderer);
