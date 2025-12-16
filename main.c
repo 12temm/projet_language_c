@@ -76,6 +76,7 @@ int main(int argc, char* argv[]) {
     int inDeathMenu = 0;
     int pickedSword = 0;
     int pickedGun = 0;
+    int enemies_killed = 0;
 
     TTF_Init();
     TTF_Font* font = TTF_OpenFont("assets/fonts/Open_Sans/OpenSans-VariableFont_wdth,wght.ttf", 24);
@@ -151,7 +152,7 @@ int main(int argc, char* argv[]) {
 
 
 
-    #define NUM_ENNEMI 100
+    #define NUM_ENNEMI 20
     Char ennemis[NUM_ENNEMI];
 
     for (int i = 0; i < NUM_ENNEMI; i++) {
@@ -215,14 +216,17 @@ int main(int argc, char* argv[]) {
     player.invincibleTime = 1000;
 
     Char arme;
-    arme.x = 300;
-    arme.y = 300;
+    arme.x = player.x + 50;
+    arme.y = player.y + 50;
     arme.rect.w = player.rect.w;
     arme.rect.h = player.rect.h+50;
 
     SDL_Surface* couteau = IMG_Load("assets/images/couteau.png");
-    arme.normal_texture = SDL_CreateTextureFromSurface(renderer, couteau);
+    SDL_Surface* armeS = IMG_Load("assets/images/arme.png");
+
+    arme.normal_texture = SDL_CreateTextureFromSurface(renderer, armeS);
     SDL_FreeSurface(couteau);
+    SDL_FreeSurface(armeS);
 
 
 
@@ -344,7 +348,7 @@ int main(int argc, char* argv[]) {
                     pickedGun = 1;
                 }
 
-                else if (isMouseInside(quitButton.rect, mx, my)) {
+                else if ((isMouseInside(quitButton.rect, mx, my))&& (inMenu)) {
                     running = 0;
                 }
             }
@@ -549,7 +553,8 @@ int main(int argc, char* argv[]) {
             }
         }
             if (count == NUM_ENNEMI) {
-                inMenu == 1;
+                inGame = 0;
+                inMenu = 1;
             }
 
             show_background(window, renderer, texture,texture_object_background, rect);
