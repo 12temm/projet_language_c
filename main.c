@@ -74,6 +74,8 @@ int main(int argc, char* argv[]) {
     int inMenu2 = 0;
     int inGame = 0;
     int inDeathMenu = 0;
+    int pickedSword = 0;
+    int pickedGun = 0;
 
     TTF_Init();
     TTF_Font* font = TTF_OpenFont("assets/fonts/Open_Sans/OpenSans-VariableFont_wdth,wght.ttf", 24);
@@ -149,7 +151,7 @@ int main(int argc, char* argv[]) {
 
 
 
-    #define NUM_ENNEMI 1
+    #define NUM_ENNEMI 100
     Char ennemis[NUM_ENNEMI];
 
     for (int i = 0; i < NUM_ENNEMI; i++) {
@@ -331,11 +333,15 @@ int main(int argc, char* argv[]) {
                 else if (inMenu2 && isMouseInside(swordButton.rect, mx, my)) {
                     inMenu2 = 0;
                     inGame = 1;
+                    pickedSword = 1;
+                    pickedGun = 0;
                 }
 
                 else if (inMenu2 && isMouseInside(gunButton.rect, mx, my)) {
                     inMenu2 = 0;
                     inGame = 1;
+                    pickedSword = 0;
+                    pickedGun = 1;
                 }
 
                 else if (isMouseInside(quitButton.rect, mx, my)) {
@@ -428,7 +434,6 @@ int main(int argc, char* argv[]) {
            choose_weapon(window, font, color, renderer, mx, my);
        }
         if (inGame == 1) {
-
             if (player.moving) {
                 Uint32 now = SDL_GetTicks();
                 if (now - player.lastFrameTime > player.frameDelay) {
@@ -474,29 +479,41 @@ int main(int argc, char* argv[]) {
                 arme.rect.x= (int)player.x;
                 if (player.currentFrame == 0) {
                     SDL_RenderCopy(renderer, player.textureR, NULL, &player.rect);
-                    SDL_RenderCopyEx(renderer,arme.normal_texture, NULL, &arme.rect, now, &center, SDL_FLIP_VERTICAL);
+                    if (pickedSword == 1) {
+                        SDL_RenderCopyEx(renderer,arme.normal_texture, NULL, &arme.rect, now, &center, SDL_FLIP_VERTICAL);
+                    }
                 }
                 else if (player.currentFrame == 1) {
                     SDL_RenderCopy(renderer, player.textureR2, NULL, &player.rect);
-                    SDL_RenderCopyEx(renderer,arme.normal_texture, NULL, &arme.rect, now, &center, SDL_FLIP_VERTICAL);
+                    if (pickedSword == 1) {
+                        SDL_RenderCopyEx(renderer,arme.normal_texture, NULL, &arme.rect, now, &center, SDL_FLIP_VERTICAL);
+                    }
                 }
                 else {
                     SDL_RenderCopy(renderer, player.textureR3, NULL, &player.rect);
-                    SDL_RenderCopyEx(renderer,arme.normal_texture, NULL, &arme.rect, now, &center, SDL_FLIP_VERTICAL);
+                    if (pickedSword == 1) {
+                        SDL_RenderCopyEx(renderer,arme.normal_texture, NULL, &arme.rect, now, &center, SDL_FLIP_VERTICAL);
+                    }
                 }
             } else {
                 arme.rect.x= (int)player.x;
                 if (player.currentFrame == 0) {
                     SDL_RenderCopy(renderer, player.textureL, NULL, &player.rect);
-                    SDL_RenderCopyEx(renderer,arme.normal_texture, NULL, &arme.rect, now, &center, SDL_FLIP_VERTICAL);
+                    if (pickedSword == 1) {
+                        SDL_RenderCopyEx(renderer,arme.normal_texture, NULL, &arme.rect, now, &center, SDL_FLIP_VERTICAL);
+                    }
                 }
                 else if (player.currentFrame == 1) {
                     SDL_RenderCopy(renderer, player.textureL2, NULL, &player.rect);
-                    SDL_RenderCopyEx(renderer,arme.normal_texture, NULL, &arme.rect, now, &center, SDL_FLIP_VERTICAL);
+                    if (pickedSword == 1) {
+                        SDL_RenderCopyEx(renderer,arme.normal_texture, NULL, &arme.rect, now, &center, SDL_FLIP_VERTICAL);
+                    }
                 }
                 else {
                     SDL_RenderCopy(renderer, player.textureL3, NULL, &player.rect);
-                    SDL_RenderCopyEx(renderer,arme.normal_texture, NULL, &arme.rect, now, &center, SDL_FLIP_VERTICAL);
+                    if (pickedSword == 1) {
+                        SDL_RenderCopyEx(renderer,arme.normal_texture, NULL, &arme.rect, now, &center, SDL_FLIP_VERTICAL);
+                    }
                 }
             }
 
@@ -509,6 +526,7 @@ int main(int argc, char* argv[]) {
 
 
             int count = 0;
+            if (pickedSword) {
             for (int i = 0; i < NUM_ENNEMI; i++) {
                 SDL_Rect rect_arme;
                 rect_arme.x = arme.rect.x;
@@ -529,6 +547,7 @@ int main(int argc, char* argv[]) {
                     count++;
                 }
             }
+        }
             if (count == NUM_ENNEMI) {
                 inMenu == 1;
             }
