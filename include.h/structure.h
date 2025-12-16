@@ -21,6 +21,7 @@ typedef struct {
     SDL_Texture* textureL2;
     SDL_Texture* textureR3;
     SDL_Texture* textureL3;
+    SDL_Texture* normal_texture;
     SDL_Rect rect;
     int currentFrame;
     Uint32 lastFrameTime;
@@ -30,7 +31,9 @@ typedef struct {
     Uint32 invincibleTime;
 } Char;
 
-typedef struct {
-    int width;
-    int height;
-} size;
+typedef struct config {
+    int windowHeight;
+    int windowWidth;
+    int attckSpeed;
+} Config;
+

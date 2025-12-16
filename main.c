@@ -4,6 +4,8 @@
 #include <SDL2/SDL_ttf.h>
 #include <stdio.h>
 #include <math.h>
+#include <string.h>
+
 
 
 #include "structure.h"
@@ -31,6 +33,41 @@ void drawHealthBar(SDL_Renderer* renderer, int x, int y, int w, int h, int healt
     }
 }
 
+void loadConfig(char *filename, Config *config) {
+    FILE *file = fopen(filename, "r");
+    if (file == NULL) {
+        printf("Le fichier de config (%s) n'a pas pu etre lu .\n", filename);
+        exit(EXIT_FAILURE);
+    }
+    char line[256];
+    while (fgets(line, sizeof(line), file)) {
+        char* chariot = strchr(line, '\n');
+        if(chariot != NULL) {
+            *chariot = '\0';
+        }
+        char *equalSign = strchr(line, '=');
+        if (equalSign == NULL) {
+            continue;
+        }
+        *equalSign = '\0';
+        char *key = line;
+        char *value = equalSign + 1;
+        if (strcmp(key, "WINDOW_HEIGHT") == 0) {
+            config->windowHeight = atoi(value);
+        }
+        if (strcmp(key, "WINDOW_WIDTH") == 0) {
+            config->windowWidth = atoi(value);
+        }
+        if (strcmp(key, "ATTACK_SPEED") == 0) {
+            config->attckSpeed = atoi(value);
+        }
+    }
+    fclose(file);
+
+}
+
+
+
 int main(int argc, char* argv[]) {
 
     int inMenu = 1;
@@ -56,14 +93,11 @@ int main(int argc, char* argv[]) {
     Mix_PlayMusic(musicMenu, -1);
 
 
+    Config config;
+    loadConfig("assets/config.txt", &config);
 
-    size window_size;
-
-    window_size.height = 800;
-    window_size.width = 800;
-
-    int w_window= window_size.width;
-    int h_window= window_size.height;
+    int w_window= config.windowWidth;
+    int h_window= config.windowHeight;
 
     SDL_Window* window = SDL_CreateWindow("SDL2 Menu",
                                           SDL_WINDOWPOS_CENTERED,
@@ -115,7 +149,7 @@ int main(int argc, char* argv[]) {
 
 
 
-    #define NUM_ENNEMI 20
+    #define NUM_ENNEMI 1
     Char ennemis[NUM_ENNEMI];
 
     for (int i = 0; i < NUM_ENNEMI; i++) {
@@ -177,6 +211,16 @@ int main(int argc, char* argv[]) {
     player.invincible = 0;
     player.invincibleStart = 0;
     player.invincibleTime = 1000;
+
+    Char arme;
+    arme.x = 300;
+    arme.y = 300;
+    arme.rect.w = player.rect.w;
+    arme.rect.h = player.rect.h+50;
+
+    SDL_Surface* couteau = IMG_Load("assets/images/couteau.png");
+    arme.normal_texture = SDL_CreateTextureFromSurface(renderer, couteau);
+    SDL_FreeSurface(couteau);
 
 
 
@@ -395,10 +439,7 @@ int main(int argc, char* argv[]) {
                 player.currentFrame = 0;
             }
 
-
-
             show_background(window, renderer, texture,texture_background, rect);
-
 
             double border_x = w_window*3.7/100;
             if (player.x <= border_x) {
@@ -422,23 +463,74 @@ int main(int argc, char* argv[]) {
 
             player.rect.x = (int)player.x;
             player.rect.y = (int)player.y;
+            arme.rect.y= (int)player.y;
+
+            SDL_Point center;
+            center.x = (player.rect.w/2);
+            center.y = (player.rect.h/2);
+            Uint32 now = SDL_GetTicks()/config.attckSpeed;
 
             if (player.orientation == 1) {
-                if (player.currentFrame == 0) SDL_RenderCopy(renderer, player.textureR, NULL, &player.rect);
-                else if (player.currentFrame == 1) SDL_RenderCopy(renderer, player.textureR2, NULL, &player.rect);
-                else SDL_RenderCopy(renderer, player.textureR3, NULL, &player.rect);
+                arme.rect.x= (int)player.x;
+                if (player.currentFrame == 0) {
+                    SDL_RenderCopy(renderer, player.textureR, NULL, &player.rect);
+                    SDL_RenderCopyEx(renderer,arme.normal_texture, NULL, &arme.rect, now, &center, SDL_FLIP_VERTICAL);
+                }
+                else if (player.currentFrame == 1) {
+                    SDL_RenderCopy(renderer, player.textureR2, NULL, &player.rect);
+                    SDL_RenderCopyEx(renderer,arme.normal_texture, NULL, &arme.rect, now, &center, SDL_FLIP_VERTICAL);
+                }
+                else {
+                    SDL_RenderCopy(renderer, player.textureR3, NULL, &player.rect);
+                    SDL_RenderCopyEx(renderer,arme.normal_texture, NULL, &arme.rect, now, &center, SDL_FLIP_VERTICAL);
+                }
             } else {
-                if (player.currentFrame == 0) SDL_RenderCopy(renderer, player.textureL, NULL, &player.rect);
-                else if (player.currentFrame == 1) SDL_RenderCopy(renderer, player.textureL2, NULL, &player.rect);
-                else SDL_RenderCopy(renderer, player.textureL3, NULL, &player.rect);
+                arme.rect.x= (int)player.x;
+                if (player.currentFrame == 0) {
+                    SDL_RenderCopy(renderer, player.textureL, NULL, &player.rect);
+                    SDL_RenderCopyEx(renderer,arme.normal_texture, NULL, &arme.rect, now, &center, SDL_FLIP_VERTICAL);
+                }
+                else if (player.currentFrame == 1) {
+                    SDL_RenderCopy(renderer, player.textureL2, NULL, &player.rect);
+                    SDL_RenderCopyEx(renderer,arme.normal_texture, NULL, &arme.rect, now, &center, SDL_FLIP_VERTICAL);
+                }
+                else {
+                    SDL_RenderCopy(renderer, player.textureL3, NULL, &player.rect);
+                    SDL_RenderCopyEx(renderer,arme.normal_texture, NULL, &arme.rect, now, &center, SDL_FLIP_VERTICAL);
+                }
             }
-
 
             for (int i = 0; i < NUM_ENNEMI; i++) {
                 if (ennemis[i].orientation == 1)
                     SDL_RenderCopy(renderer, ennemis[i].textureR, NULL, &ennemis[i].rect);
                 else
                     SDL_RenderCopy(renderer, ennemis[i].textureL, NULL, &ennemis[i].rect);
+            }
+
+
+            int count = 0;
+            for (int i = 0; i < NUM_ENNEMI; i++) {
+                SDL_Rect rect_arme;
+                rect_arme.x = arme.rect.x;
+                rect_arme.y = arme.rect.y;
+                rect_arme.w = arme.rect.w;
+                rect_arme.h = arme.rect.h;
+
+                SDL_Rect rect_ennemis;
+                rect_ennemis.x = ennemis[i].rect.x;
+                rect_ennemis.y = ennemis[i].rect.y;
+                rect_ennemis.w = ennemis[i].rect.w;
+                rect_ennemis.h = ennemis[i].rect.h;
+                if(SDL_HasIntersection(&rect_ennemis, &rect_arme) == SDL_TRUE) {
+                    SDL_DestroyTexture(ennemis[i].textureR);
+                    SDL_DestroyTexture(ennemis[i].textureL);
+                    ennemis[i].x = 1000;
+                    ennemis[i].y = 1000;
+                    count++;
+                }
+            }
+            if (count == NUM_ENNEMI) {
+                inMenu == 1;
             }
 
             show_background(window, renderer, texture,texture_object_background, rect);
@@ -468,6 +560,7 @@ int main(int argc, char* argv[]) {
     SDL_DestroyTexture(quitText);
     SDL_DestroyTexture(texture);
     destroy_menu_weapons(window,font,color);
+    SDL_DestroyTexture(arme.normal_texture);
     SDL_DestroyTexture(player.textureR);
     SDL_DestroyTexture(player.textureL);
     SDL_DestroyTexture(player.textureR2);
