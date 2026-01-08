@@ -102,7 +102,7 @@ int main(int argc, char* argv[]) {
     int w_window= config.windowWidth;
     int h_window= config.windowHeight;
 
-    SDL_Window* window = SDL_CreateWindow("SDL2 Menu",
+    SDL_Window* window = SDL_CreateWindow("quoicoubeh",
                                           SDL_WINDOWPOS_CENTERED,
                                           SDL_WINDOWPOS_CENTERED,
                                           w_window, h_window,
@@ -266,6 +266,11 @@ int main(int argc, char* argv[]) {
     Button playButton = {{220, 150, 200, 60}, {0, 200, 0, 255}, "Play",1};
     Button quitButton = {{220, 250, 200, 60}, {200, 0, 0, 255}, "Quit",1};
     Button replayButton = {{570, 600, 200, 60}, {0, 200, 0, 255}, "Reesayer",1};
+    Button menuButton = {{570, 700, 200, 60}, {0, 200, 0, 255}, "menu",1};
+
+    SDL_Surface* menuSurface = TTF_RenderText_Blended(font, menuButton.label, color);
+    SDL_Texture* menuText = SDL_CreateTextureFromSurface(renderer, menuSurface);
+    SDL_FreeSurface(menuSurface);
 
     SDL_Surface* replaySurface = TTF_RenderText_Blended(font, replayButton.label, color);
     SDL_Texture* replayText = SDL_CreateTextureFromSurface(renderer, replaySurface);
@@ -358,6 +363,15 @@ int main(int argc, char* argv[]) {
                     running = 0;
                 }
 
+                else if ((isMouseInside(menuButton.rect, mx, my))&& (inDeathMenu)){
+
+                    inDeathMenu = 0;
+                    inMenu = 1;
+
+                    Mix_HaltMusic();
+                    Mix_PlayMusic(musicGame, -1);
+                }
+
                 else if ((isMouseInside(replayButton.rect, mx, my))&& (inDeathMenu)){
 
                         inDeathMenu = 0;
@@ -405,6 +419,7 @@ int main(int argc, char* argv[]) {
                     }
 
                 }
+
         }
 
         if (inGame) {
@@ -638,7 +653,23 @@ int main(int argc, char* argv[]) {
             replayRectText.y = replayButton.rect.y + (replayButton.rect.h - replayRectText.h) / 2;
             SDL_RenderCopy(renderer, replayText, NULL, &replayRectText);
 
+            SDL_RenderCopy(renderer, texture_gameover, NULL, &rect_gameover);
+            replayButton.visible = 1;
+
+            if (isMouseInside(menuButton.rect, mx, my))
+                SDL_SetRenderDrawColor(renderer, 200, 0, 200, 255);
+            else
+                SDL_SetRenderDrawColor(renderer, 50, 0, 50, 255);
+            SDL_RenderFillRect(renderer, &menuButton.rect);
+
+            SDL_Rect menuRectText = {0, 0, 0, 0};
+            SDL_QueryTexture(menuText, NULL, NULL, &menuRectText.w, &menuRectText.h);
+            menuRectText.x = menuButton.rect.x + (menuButton.rect.w - menuRectText.w) / 2;
+            menuRectText.y = menuButton.rect.y + (menuButton.rect.h - menuRectText.h) / 2;
+            SDL_RenderCopy(renderer, menuText, NULL, &menuRectText);
+
         } else {
+            menuButton.visible = 0;
             replayButton.visible = 0;
         }
 
