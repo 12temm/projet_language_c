@@ -13,6 +13,7 @@
 #include "menu.h"
 #include "menu_weapons.h"
 #include "background.h"
+#include "entity.h"
 
 
 int isMouseInside(SDL_Rect rect, int x, int y) {
@@ -155,35 +156,10 @@ int main(int argc, char* argv[]) {
     #define NUM_ENNEMI 20
     Char ennemis[NUM_ENNEMI];
 
+
+    resetEnnemis(ennemis, NUM_ENNEMI);
+
     for (int i = 0; i < NUM_ENNEMI; i++) {
-        ennemis[i].moving = 0;
-        ennemis[i].vx = 0;
-        ennemis[i].vy = 0;
-        ennemis[i].speed = 1;
-        ennemis[i].rect.w = 15;
-        ennemis[i].rect.h = 15;
-        ennemis[i].orientation = 1;
-
-        int side = rand() % 4;
-
-        switch (side) {
-            case 0:
-                ennemis[i].x = rand() % 800;
-            ennemis[i].y = -(rand () % 1000);;
-            break;
-            case 1:
-                ennemis[i].x = rand() % 800;
-            ennemis[i].y = 800 + rand () % 1000;
-            break;
-            case 2:
-                ennemis[i].x = -(rand () % 1000);
-            ennemis[i].y = rand() % 800;
-            break;
-            case 3:
-                ennemis[i].x = 800 + rand () % 1000;
-            ennemis[i].y = rand() % 800;
-            break;
-        }
 
 
         SDL_Surface* mechant_right = IMG_Load("assets/images/mechantR.png");
@@ -367,6 +343,18 @@ int main(int argc, char* argv[]) {
 
                     inDeathMenu = 0;
                     inMenu = 1;
+                    playButton.visible = 1;
+                    quitButton.visible = 1;
+
+                    player.health = player.maxHealth;
+                    player.x = 300;
+                    player.y = 300;
+                    player.vx = 0;
+                    player.vy = 0;
+                    player.invincible = 0;
+
+                    resetEnnemis(ennemis, NUM_ENNEMI);
+
 
                     Mix_HaltMusic();
                     Mix_PlayMusic(musicGame, -1);
@@ -384,35 +372,7 @@ int main(int argc, char* argv[]) {
                         player.vy = 0;
                         player.invincible = 0;
 
-                        for (int i = 0; i < NUM_ENNEMI; i++) {
-                            ennemis[i].moving = 0;
-                            ennemis[i].speed = 1;
-                            ennemis[i].rect.w = 15;
-                            ennemis[i].rect.h = 15;
-
-                            int side = rand() % 4;
-                            switch (side) {
-                                case 0:
-                                    ennemis[i].x = rand() % 800;
-                                ennemis[i].y = -(rand() % 1000);
-                                break;
-                                case 1:
-                                    ennemis[i].x = rand() % 800;
-                                ennemis[i].y = 800 + rand() % 1000;
-                                break;
-                                case 2:
-                                    ennemis[i].x = -(rand() % 1000);
-                                ennemis[i].y = rand() % 800;
-                                break;
-                                case 3:
-                                    ennemis[i].x = 800 + rand() % 1000;
-                                ennemis[i].y = rand() % 800;
-                                break;
-                            }
-
-                            ennemis[i].rect.x = ennemis[i].x;
-                            ennemis[i].rect.y = ennemis[i].y;
-                        }
+                        resetEnnemis(ennemis, NUM_ENNEMI);
 
                         Mix_HaltMusic();
                         Mix_PlayMusic(musicGame, -1);
@@ -653,8 +613,7 @@ int main(int argc, char* argv[]) {
             replayRectText.y = replayButton.rect.y + (replayButton.rect.h - replayRectText.h) / 2;
             SDL_RenderCopy(renderer, replayText, NULL, &replayRectText);
 
-            SDL_RenderCopy(renderer, texture_gameover, NULL, &rect_gameover);
-            replayButton.visible = 1;
+            menuButton.visible = 1;
 
             if (isMouseInside(menuButton.rect, mx, my))
                 SDL_SetRenderDrawColor(renderer, 200, 0, 200, 255);

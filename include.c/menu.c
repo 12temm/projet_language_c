@@ -15,3 +15,4 @@ int music_menu(Mix_Music* musicMenu){
         Mix_PlayMusic(musicMenu, -1);
     }
 }
+
