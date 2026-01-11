@@ -15,6 +15,7 @@ typedef struct {
     int moving;
     int health;
     int maxHealth;
+    int dead;
     SDL_Texture* textureR;
     SDL_Texture* textureL;
     SDL_Texture* textureR2;

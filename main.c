@@ -441,36 +441,40 @@ int main(int argc, char* argv[]) {
 
         if (inGame) {
             for (int i = 0; i < NUM_ENNEMI; i++) {
-                float dx = player.x - ennemis[i].x;
-                float dy = player.y - ennemis[i].y;
+                if (!(ennemis[i].dead == 1)) {
+                    float dx = player.x - ennemis[i].x;
+                    float dy = player.y - ennemis[i].y;
 
-                float dist = sqrtf(dx*dx + dy*dy);
-                Uint32 now = SDL_GetTicks();
+                    float dist = sqrtf(dx*dx + dy*dy);
+                    Uint32 now = SDL_GetTicks();
 
-                if (dist < 10 && !player.invincible) {
-                    player.health = player.health -1;
-                    player.invincible = 1;
-                    player.invincibleStart = now;
+                    if (dist < 10 && !player.invincible) {
+                        player.health = player.health -1;
+                        player.invincible = 1;
+                        player.invincibleStart = now;
+                    }
+
+
+                    if (dist > 0.1f) {
+                        dx /= dist;
+                        dy /= dist;
+
+                        ennemis[i].vx = dx * ennemis[i].speed;
+                        ennemis[i].vy = dy * ennemis[i].speed;
+
+                        ennemis[i].orientation = (dx >= 0) ? 1 : 2;
+                    }
+
+
+
+                    ennemis[i].x += ennemis[i].vx;
+                    ennemis[i].y += ennemis[i].vy;
+
+                    ennemis[i].rect.x = (int)ennemis[i].x;
+                    ennemis[i].rect.y = (int)ennemis[i].y;
+                }
                 }
 
-                if (dist > 0.1f) {
-                    dx /= dist;
-                    dy /= dist;
-
-                    ennemis[i].vx = dx * ennemis[i].speed;
-                    ennemis[i].vy = dy * ennemis[i].speed;
-
-                    ennemis[i].orientation = (dx >= 0) ? 1 : 2;
-                }
-
-
-
-                ennemis[i].x += ennemis[i].vx;
-                ennemis[i].y += ennemis[i].vy;
-
-                ennemis[i].rect.x = (int)ennemis[i].x;
-                ennemis[i].rect.y = (int)ennemis[i].y;
-            }
 
             if (player.invincible) {
                 Uint32 now = SDL_GetTicks();
@@ -640,25 +644,59 @@ int main(int argc, char* argv[]) {
 
             int count = 0;
             if (pickedSword) {
-            for (int i = 0; i < NUM_ENNEMI; i++) {
-                SDL_Rect rect_arme;
-                rect_arme.x = arme.rect.x;
-                rect_arme.y = arme.rect.y;
-                rect_arme.w = arme.rect.w;
-                rect_arme.h = arme.rect.h;
+                for (int i = 0; i < NUM_ENNEMI; i++) {
+                    if (!(ennemis[i].dead == 1)) {
+                        SDL_Rect rect_arme;
+                        rect_arme.x = arme.rect.x;
+                        rect_arme.y = arme.rect.y;
+                        rect_arme.w = arme.rect.w;
+                        rect_arme.h = arme.rect.h;
 
-                SDL_Rect rect_ennemis;
-                rect_ennemis.x = ennemis[i].rect.x;
-                rect_ennemis.y = ennemis[i].rect.y;
-                rect_ennemis.w = ennemis[i].rect.w;
-                rect_ennemis.h = ennemis[i].rect.h;
-                if(SDL_HasIntersection(&rect_ennemis, &rect_arme) == SDL_TRUE) {
-                    SDL_DestroyTexture(ennemis[i].textureR);
-                    SDL_DestroyTexture(ennemis[i].textureL);
-                    ennemis[i].x = 1000;
-                    ennemis[i].y = 1000;
-                    count++;
+                        SDL_Rect rect_ennemis;
+                        rect_ennemis.x = ennemis[i].rect.x;
+                        rect_ennemis.y = ennemis[i].rect.y;
+                        rect_ennemis.w = ennemis[i].rect.w;
+                        rect_ennemis.h = ennemis[i].rect.h;
+                        if(SDL_HasIntersection(&rect_ennemis, &rect_arme) == SDL_TRUE) {
+                            SDL_DestroyTexture(ennemis[i].textureR);
+                            SDL_DestroyTexture(ennemis[i].textureL);
+                            ennemis[i].x = 1000;
+                            ennemis[i].y = 1000;
+                            ennemis[i].dead = 1;
+                            count++;
+                        }
+                    }
                 }
+            }
+                if (pickedGun ==1) {
+                for (int i = 0; i < NUM_ENNEMI; i++) {
+                    if (!(ennemis[i].dead == 1)) {
+                        for (int j = 0; j < NUM_BALLES; j++) {
+                            if (balles[j].active) {
+                                SDL_Rect rect_balle;
+                                rect_balle.x = balles[j].rect.x;
+                                rect_balle.y = balles[j].rect.y;
+                                rect_balle.w = balles[j].rect.w;
+                                rect_balle.h = balles[j].rect.h;
+
+                                SDL_Rect rect_ennemis;
+                                rect_ennemis.x = ennemis[i].rect.x;
+                                rect_ennemis.y = ennemis[i].rect.y;
+                                rect_ennemis.w = ennemis[i].rect.w;
+                                rect_ennemis.h = ennemis[i].rect.h;
+                                if(SDL_HasIntersection(&rect_ennemis, &rect_balle) == SDL_TRUE) {
+                                    SDL_DestroyTexture(ennemis[i].textureR);
+                                    SDL_DestroyTexture(ennemis[i].textureL);
+                                    ennemis[i].x = 1000;
+                                    ennemis[i].y = 1000;
+                                    ennemis[i].dead = 1;
+                                    count++;
+                                    balles[j].active = 0;
+                                }
+                            }
+                        }
+                    }
+
             }
         }
             if (count == NUM_ENNEMI) {
@@ -724,6 +762,7 @@ int main(int argc, char* argv[]) {
     SDL_DestroyTexture(quitText);
     SDL_DestroyTexture(texture);
     destroy_menu_weapons(window,font,color);
+
     SDL_DestroyTexture(arme.normal_texture);
     SDL_DestroyTexture(player.textureR);
     SDL_DestroyTexture(player.textureL);
