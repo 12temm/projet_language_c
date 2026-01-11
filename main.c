@@ -17,8 +17,7 @@
 
 
 int isMouseInside(SDL_Rect rect, int x, int y) {
-    return (x >= rect.x && x <= rect.x + rect.w &&
-            y >= rect.y && y <= rect.y + rect.h);
+    return (x >= rect.x && x <= rect.x + rect.w && y >= rect.y && y <= rect.y + rect.h);
 }
 
 void drawHealthBar(SDL_Renderer* renderer, int x, int y, int w, int h, int health, int maxHealth) {
@@ -150,6 +149,23 @@ int main(int argc, char* argv[]) {
     rect_gameover.h = h_window;
 
 
+
+
+    #define NUM_BALLES 20
+    Proj balles[NUM_BALLES];
+
+    for (int i = 0; i < NUM_BALLES; i++) {
+        balles[i].active = 0;
+    }
+
+
+    SDL_Surface* balleSurface = IMG_Load("assets/images/balle.png");
+    if (!balleSurface) {
+        printf("Erreur IMG_Load balle: %s\n", IMG_GetError());
+    }
+
+    SDL_Texture* balleTexture = SDL_CreateTextureFromSurface(renderer, balleSurface);
+    SDL_FreeSurface(balleSurface);
 
 
 
@@ -378,6 +394,47 @@ int main(int argc, char* argv[]) {
                         Mix_PlayMusic(musicGame, -1);
                     }
 
+                if (e.type == SDL_MOUSEBUTTONDOWN &&
+                    e.button.button == SDL_BUTTON_LEFT &&
+                    inGame && pickedGun) {
+
+                    int mx = e.button.x;
+                    int my = e.button.y;
+
+                    for (int i = 0; i < NUM_BALLES; i++) {
+                        if (!balles[i].active) {
+
+                            balles[i].active = 1;
+
+                            balles[i].x = player.x + player.rect.w / 2;
+                            balles[i].y = player.y + player.rect.h / 2;
+
+                            float dx = mx - balles[i].x;
+                            float dy = my - balles[i].y;
+
+                            float length = sqrtf(dx * dx + dy * dy);
+                            if (length == 0) length = 1;
+
+                            dx /= length;
+                            dy /= length;
+
+                            balles[i].speed = 8;
+                            balles[i].vx = dx * balles[i].speed;
+                            balles[i].vy = dy * balles[i].speed;
+                            balles[i].rect.w = 10;
+                            balles[i].rect.h = 4;
+                            balles[i].rect.x = (int)balles[i].x;
+                            balles[i].rect.y = (int)balles[i].y;
+
+                            balles[i].texture = balleTexture;
+
+                            break;
+                        }
+                    }
+                    }
+
+
+
                 }
 
         }
@@ -421,6 +478,23 @@ int main(int argc, char* argv[]) {
                     player.invincible = 0;
                 }
             }
+
+            for (int i = 0; i < NUM_BALLES; i++) {
+                if (balles[i].active) {
+
+                    balles[i].x += balles[i].vx;
+                    balles[i].y += balles[i].vy;
+
+                    balles[i].rect.x = (int)balles[i].x;
+                    balles[i].rect.y = (int)balles[i].y;
+
+                    if (balles[i].x < 0 || balles[i].x > w_window ||
+                        balles[i].y < 0 || balles[i].y > h_window) {
+                        balles[i].active = 0;
+                        }
+                }
+            }
+
 
         }
 
@@ -555,6 +629,13 @@ int main(int argc, char* argv[]) {
                 else
                     SDL_RenderCopy(renderer, ennemis[i].textureL, NULL, &ennemis[i].rect);
             }
+
+            for (int i = 0; i < NUM_BALLES; i++) {
+                if (balles[i].active) {
+                    SDL_RenderCopy(renderer, balles[i].texture, NULL, &balles[i].rect);
+                }
+            }
+
 
 
             int count = 0;

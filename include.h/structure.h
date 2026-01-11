@@ -37,3 +37,14 @@ typedef struct config {
     int attckSpeed;
 } Config;
 
+typedef struct {
+    float x, y;
+    float vx, vy;
+    float speed;
+    int moving;
+    int active;
+    SDL_Texture* texture;
+    SDL_Rect rect;
+} Proj;
+
+
