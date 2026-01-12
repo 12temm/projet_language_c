@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.15)
 project(MySDLProject C)
 
-set(SDL2_PATH "C:/projet_langage_C/SDL2")
+set(SDL2_PATH "C:/Users/pasca/CLionProjects/projet_language_c/SDL2")
 
 add_executable(MySDLProject main.c
         include.h/structure.h
@@ -14,6 +14,8 @@ add_executable(MySDLProject main.c
         include.c/background.c
         include.h/background.h
         include.c/entity.c
+        include.h/leaderboard.h
+        include.c/leaderboard.c
 )
 
 target_include_directories(MySDLProject PRIVATE

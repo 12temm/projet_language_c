@@ -14,6 +14,7 @@
 #include "menu_weapons.h"
 #include "background.h"
 #include "entity.h"
+#include "leaderboard.h"
 
 
 int isMouseInside(SDL_Rect rect, int x, int y) {
@@ -259,6 +260,17 @@ int main(int argc, char* argv[]) {
     Button quitButton = {{220, 250, 200, 60}, {200, 0, 0, 255}, "Quit",1};
     Button replayButton = {{570, 600, 200, 60}, {0, 200, 0, 255}, "Reesayer",1};
     Button menuButton = {{570, 700, 200, 60}, {0, 200, 0, 255}, "menu",1};
+    Button scoresButton = {{220, 350, 200, 60}, {0, 0, 200, 255}, "Scores", 1};
+    Button scoresDeathButton = {{570, 500, 200, 60}, {0, 0, 200, 255}, "Scores", 1};
+
+    SDL_Surface* scoresDeathSurface = TTF_RenderText_Blended(font, scoresDeathButton.label, color);
+    SDL_Texture* scoresDeathText = SDL_CreateTextureFromSurface(renderer, scoresDeathSurface);
+    SDL_FreeSurface(scoresDeathSurface);
+
+    SDL_Surface* scoresSurface = TTF_RenderText_Blended(font, scoresButton.label, color);
+    SDL_Texture* scoresText = SDL_CreateTextureFromSurface(renderer, scoresSurface);
+    SDL_FreeSurface(scoresSurface);
+    init_leaderboard();
 
     SDL_Surface* menuSurface = TTF_RenderText_Blended(font, menuButton.label, color);
     SDL_Texture* menuText = SDL_CreateTextureFromSurface(renderer, menuSurface);
@@ -331,7 +343,7 @@ int main(int argc, char* argv[]) {
                     inMenu2 = 1;
                     playButton.visible = 0;
                     quitButton.visible = 0;
-
+                    enemies_killed = 0;
 
                     Mix_HaltMusic();
                     Mix_PlayMusic(musicGame, -1);
@@ -353,6 +365,10 @@ int main(int argc, char* argv[]) {
 
                 else if ((isMouseInside(quitButton.rect, mx, my))&& (inMenu)) {
                     running = 0;
+                }
+                else if (isMouseInside(scoresButton.rect, mx, my) && inMenu) {
+                    int ret = show_leaderboard_loop(window, renderer, font);
+                    if (ret == 0) running = 0;
                 }
 
                 else if ((isMouseInside(menuButton.rect, mx, my))&& (inDeathMenu)){
@@ -393,6 +409,9 @@ int main(int argc, char* argv[]) {
                         Mix_HaltMusic();
                         Mix_PlayMusic(musicGame, -1);
                     }
+                else if (isMouseInside(scoresDeathButton.rect, mx, my) && inDeathMenu) {
+                    show_leaderboard_loop(window, renderer, font);
+                }
 
                 if (e.type == SDL_MOUSEBUTTONDOWN &&
                     e.button.button == SDL_BUTTON_LEFT &&
@@ -539,6 +558,19 @@ int main(int argc, char* argv[]) {
             quitRectText.y = quitButton.rect.y + (quitButton.rect.h - quitRectText.h) / 2;
             SDL_RenderCopy(renderer, quitText, NULL, &quitRectText);
         }
+        if (inMenu) {
+            if (isMouseInside(scoresButton.rect, mx, my))
+                SDL_SetRenderDrawColor(renderer, 0, 0, 255, 255);
+            else
+                SDL_SetRenderDrawColor(renderer, 0, 0, 200, 255);
+            SDL_RenderFillRect(renderer, &scoresButton.rect);
+
+            SDL_Rect scoresRectText = {0, 0, 0, 0};
+            SDL_QueryTexture(scoresText, NULL, NULL, &scoresRectText.w, &scoresRectText.h);
+            scoresRectText.x = scoresButton.rect.x + (scoresButton.rect.w - scoresRectText.w) / 2;
+            scoresRectText.y = scoresButton.rect.y + (scoresButton.rect.h - scoresRectText.h) / 2;
+            SDL_RenderCopy(renderer, scoresText, NULL, &scoresRectText);
+        }
 
        if (inMenu2 == 1) {
            choose_weapon(window, font, color, renderer, mx, my);
@@ -664,6 +696,7 @@ int main(int argc, char* argv[]) {
                             ennemis[i].y = 1000;
                             ennemis[i].dead = 1;
                             count++;
+                            enemies_killed++;
                         }
                     }
                 }
@@ -692,6 +725,7 @@ int main(int argc, char* argv[]) {
                                     ennemis[i].dead = 1;
                                     count++;
                                     balles[j].active = 0;
+                                    enemies_killed++;
                                 }
                             }
                         }
@@ -708,9 +742,32 @@ int main(int argc, char* argv[]) {
 
             drawHealthBar(renderer, 20, 20, 200, 20, player.health, player.maxHealth);
 
+            char scoreText[32];
+            sprintf(scoreText, "Score: %d", enemies_killed);
+
+            SDL_Color scoreColor = {255, 255, 255, 255}; // Blanc
+            SDL_Surface* surfaceScore = TTF_RenderText_Blended(font, scoreText, scoreColor);
+
+            if (surfaceScore) {
+                SDL_Texture* textureScore = SDL_CreateTextureFromSurface(renderer, surfaceScore);
+                SDL_Rect rectScore;
+                rectScore.x = 20;
+                rectScore.y = 50;
+                rectScore.w = surfaceScore->w;
+                rectScore.h = surfaceScore->h;
+
+                SDL_RenderCopy(renderer, textureScore, NULL, &rectScore);
+
+                SDL_FreeSurface(surfaceScore);
+                SDL_DestroyTexture(textureScore);
+            }
+
             if (player.health <= 0) {
                 Mix_HaltMusic();
                 Mix_PlayMusic(musicDeath, -1);
+
+                update_high_score("Player", enemies_killed);
+
                 inDeathMenu = 1;
                 inGame = 0;
             }
@@ -733,6 +790,19 @@ int main(int argc, char* argv[]) {
             SDL_RenderCopy(renderer, replayText, NULL, &replayRectText);
 
             menuButton.visible = 1;
+            scoresDeathButton.visible = 1;
+            if (isMouseInside(scoresDeathButton.rect, mx, my))
+                SDL_SetRenderDrawColor(renderer, 0, 0, 255, 255);
+            else
+                SDL_SetRenderDrawColor(renderer, 0, 0, 200, 255);
+            SDL_RenderFillRect(renderer, &scoresDeathButton.rect);
+
+            SDL_Rect scoresDeathRectText = {0, 0, 0, 0};
+            SDL_QueryTexture(scoresDeathText, NULL, NULL, &scoresDeathRectText.w, &scoresDeathRectText.h);
+            scoresDeathRectText.x = scoresDeathButton.rect.x + (scoresDeathButton.rect.w - scoresDeathRectText.w) / 2;
+            scoresDeathRectText.y = scoresDeathButton.rect.y + (scoresDeathButton.rect.h - scoresDeathRectText.h) / 2;
+            SDL_RenderCopy(renderer, scoresDeathText, NULL, &scoresDeathRectText);
+
 
             if (isMouseInside(menuButton.rect, mx, my))
                 SDL_SetRenderDrawColor(renderer, 200, 0, 200, 255);
@@ -777,9 +847,12 @@ int main(int argc, char* argv[]) {
     destroy_background(window,renderer,texture);
     TTF_CloseFont(font);
     TTF_Quit();
+    SDL_DestroyTexture(scoresText);
     SDL_DestroyRenderer(renderer);
+    SDL_DestroyTexture(scoresDeathText);
     SDL_DestroyWindow(window);
 
+    destroy_menu_weapons(window, font, color);
     SDL_Quit();
 
 
