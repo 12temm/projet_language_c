@@ -36,6 +36,7 @@ typedef struct config {
     int windowHeight;
     int windowWidth;
     int attckSpeed;
+    int numEnnemi;
 } Config;
 
 typedef struct {

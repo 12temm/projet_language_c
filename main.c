@@ -15,6 +15,7 @@
 #include "background.h"
 #include "entity.h"
 #include "leaderboard.h"
+#include "victory.h"
 
 
 int isMouseInside(SDL_Rect rect, int x, int y) {
@@ -62,6 +63,9 @@ void loadConfig(char *filename, Config *config) {
         if (strcmp(key, "ATTACK_SPEED") == 0) {
             config->attckSpeed = atoi(value);
         }
+        if (strcmp(key, "NUM_ENNEMI") == 0) {
+            config->numEnnemi = atoi(value);
+        }
     }
     fclose(file);
 
@@ -75,6 +79,7 @@ int main(int argc, char* argv[]) {
     int inMenu2 = 0;
     int inGame = 0;
     int inDeathMenu = 0;
+    int inWinMenu = 0;
     int pickedSword = 0;
     int pickedGun = 0;
     int enemies_killed = 0;
@@ -169,14 +174,15 @@ int main(int argc, char* argv[]) {
     SDL_FreeSurface(balleSurface);
 
 
+    Char* ennemis = NULL;
+    ennemis = malloc(sizeof(Char) * config.numEnnemi);
+    if (ennemis == NULL) {
+        printf("Erreur d'allocation mémoire\n");
+        return 1;
+    }
+    resetEnnemis(ennemis, config.numEnnemi);
 
-    #define NUM_ENNEMI 20
-    Char ennemis[NUM_ENNEMI];
-
-
-    resetEnnemis(ennemis, NUM_ENNEMI);
-
-    for (int i = 0; i < NUM_ENNEMI; i++) {
+    for (int i = 0; i <config.numEnnemi; i++) {
 
 
         SDL_Surface* mechant_right = IMG_Load("assets/images/mechantR.png");
@@ -187,6 +193,7 @@ int main(int argc, char* argv[]) {
         ennemis[i].textureL = SDL_CreateTextureFromSurface(renderer, mechant_left);
         SDL_FreeSurface(mechant_left);
     }
+
 
     Char player;
 
@@ -385,7 +392,7 @@ int main(int argc, char* argv[]) {
                     player.vy = 0;
                     player.invincible = 0;
 
-                    resetEnnemis(ennemis, NUM_ENNEMI);
+                    resetEnnemis(ennemis, config.numEnnemi);
 
 
                     Mix_HaltMusic();
@@ -404,7 +411,7 @@ int main(int argc, char* argv[]) {
                         player.vy = 0;
                         player.invincible = 0;
 
-                        resetEnnemis(ennemis, NUM_ENNEMI);
+                        resetEnnemis(ennemis, config.numEnnemi);
 
                         Mix_HaltMusic();
                         Mix_PlayMusic(musicGame, -1);
@@ -412,6 +419,73 @@ int main(int argc, char* argv[]) {
                 else if (isMouseInside(scoresDeathButton.rect, mx, my) && inDeathMenu) {
                     show_leaderboard_loop(window, renderer, font);
                 }
+                if ((isMouseInside(menuButton.rect, mx, my)) && (inWinMenu)) {
+                        inWinMenu = 0;
+                        inMenu = 1;
+                        playButton.visible = 1;
+                        quitButton.visible = 1;
+
+                        player.health = player.maxHealth;
+                        enemies_killed = 0;
+
+                        resetEnnemis(ennemis, config.numEnnemi);
+
+
+                        for (int k = 0; k < config.numEnnemi; k++) {
+                            ennemis[k].dead = 0;
+                            SDL_Surface* tmpR = IMG_Load("assets/images/mechantR.png");
+                            ennemis[k].textureR = SDL_CreateTextureFromSurface(renderer, tmpR);
+                            SDL_FreeSurface(tmpR);
+                            SDL_Surface* tmpL = IMG_Load("assets/images/mechantL.png");
+                            ennemis[k].textureL = SDL_CreateTextureFromSurface(renderer, tmpL);
+                            SDL_FreeSurface(tmpL);
+                        }
+
+                        for (int k = 0; k < NUM_BALLES; k++) balles[k].active = 0;
+
+                        Mix_HaltMusic();
+                        Mix_PlayMusic(musicMenu, -1);
+                    }
+
+                   else if ((isMouseInside(replayButton.rect, mx, my)) && (inWinMenu)) {
+
+                        inWinMenu = 0;
+                        inGame = 1;
+
+                        player.health = player.maxHealth;
+                        player.x = 300;
+                        player.y = 300;
+                        player.vx = 0;
+                        player.vy = 0;
+                        player.invincible = 0;
+
+                        enemies_killed = 0;
+
+                        resetEnnemis(ennemis, config.numEnnemi);
+
+
+                        for (int k = 0; k < config.numEnnemi; k++) {
+                            ennemis[k].dead = 0; // On ressuscite l'ennemi
+
+                            SDL_Surface* tmpR = IMG_Load("assets/images/mechantR.png");
+                            ennemis[k].textureR = SDL_CreateTextureFromSurface(renderer, tmpR);
+                            SDL_FreeSurface(tmpR);
+
+                            SDL_Surface* tmpL = IMG_Load("assets/images/mechantL.png");
+                            ennemis[k].textureL = SDL_CreateTextureFromSurface(renderer, tmpL);
+                            SDL_FreeSurface(tmpL);
+                        }
+
+                        for (int k = 0; k < NUM_BALLES; k++) {
+                            balles[k].active = 0;
+                        }
+
+                        Mix_HaltMusic();
+                        Mix_PlayMusic(musicGame, -1);
+                   }
+                   else if ((isMouseInside(scoresDeathButton.rect, mx, my)) && (inWinMenu)) {
+                       show_leaderboard_loop(window, renderer, font);
+                   }
 
                 if (e.type == SDL_MOUSEBUTTONDOWN &&
                     e.button.button == SDL_BUTTON_LEFT &&
@@ -459,7 +533,7 @@ int main(int argc, char* argv[]) {
         }
 
         if (inGame) {
-            for (int i = 0; i < NUM_ENNEMI; i++) {
+            for (int i = 0; i < config.numEnnemi; i++) {
                 if (!(ennemis[i].dead == 1)) {
                     float dx = player.x - ennemis[i].x;
                     float dy = player.y - ennemis[i].y;
@@ -659,7 +733,7 @@ int main(int argc, char* argv[]) {
                 }
             }
 
-            for (int i = 0; i < NUM_ENNEMI; i++) {
+            for (int i = 0; i < config.numEnnemi; i++) {
                 if (ennemis[i].orientation == 1)
                     SDL_RenderCopy(renderer, ennemis[i].textureR, NULL, &ennemis[i].rect);
                 else
@@ -676,7 +750,7 @@ int main(int argc, char* argv[]) {
 
             int count = 0;
             if (pickedSword) {
-                for (int i = 0; i < NUM_ENNEMI; i++) {
+                for (int i = 0; i < config.numEnnemi; i++) {
                     if (!(ennemis[i].dead == 1)) {
                         SDL_Rect rect_arme;
                         rect_arme.x = arme.rect.x;
@@ -690,8 +764,7 @@ int main(int argc, char* argv[]) {
                         rect_ennemis.w = ennemis[i].rect.w;
                         rect_ennemis.h = ennemis[i].rect.h;
                         if(SDL_HasIntersection(&rect_ennemis, &rect_arme) == SDL_TRUE) {
-                            SDL_DestroyTexture(ennemis[i].textureR);
-                            SDL_DestroyTexture(ennemis[i].textureL);
+
                             ennemis[i].x = 1000;
                             ennemis[i].y = 1000;
                             ennemis[i].dead = 1;
@@ -702,7 +775,7 @@ int main(int argc, char* argv[]) {
                 }
             }
                 if (pickedGun ==1) {
-                for (int i = 0; i < NUM_ENNEMI; i++) {
+                for (int i = 0; i < config.numEnnemi; i++) {
                     if (!(ennemis[i].dead == 1)) {
                         for (int j = 0; j < NUM_BALLES; j++) {
                             if (balles[j].active) {
@@ -730,12 +803,16 @@ int main(int argc, char* argv[]) {
                             }
                         }
                     }
-
+                    else {
+                        count++;
+                    }
             }
         }
-            if (count == NUM_ENNEMI) {
+            if (count == config.numEnnemi) {
                 inGame = 0;
-                inMenu = 1;
+                inWinMenu = 1;
+                update_high_score("Player", enemies_killed);
+                Mix_HaltMusic();
             }
 
             show_background(window, renderer, texture,texture_object_background, rect);
@@ -816,7 +893,14 @@ int main(int argc, char* argv[]) {
             menuRectText.y = menuButton.rect.y + (menuButton.rect.h - menuRectText.h) / 2;
             SDL_RenderCopy(renderer, menuText, NULL, &menuRectText);
 
-        } else {
+        }
+        else if (inWinMenu == 1) {
+            replayButton.visible = 1;
+            menuButton.visible = 1;
+            scoresDeathButton.visible = 1;
+            render_victory_screen(renderer, font, w_window, h_window, mx, my, &replayButton, &menuButton, &scoresDeathButton);
+        }
+        else {
             menuButton.visible = 0;
             replayButton.visible = 0;
         }
@@ -840,7 +924,7 @@ int main(int argc, char* argv[]) {
     SDL_DestroyTexture(player.textureL2);
     SDL_DestroyTexture(player.textureR3);
     SDL_DestroyTexture(player.textureL3);
-    for (int i = 0; i < NUM_ENNEMI; i++) {
+    for (int i = 0; i < config.numEnnemi; i++) {
         SDL_DestroyTexture(ennemis[i].textureR);
         SDL_DestroyTexture(ennemis[i].textureL);
     }
@@ -854,7 +938,7 @@ int main(int argc, char* argv[]) {
 
     destroy_menu_weapons(window, font, color);
     SDL_Quit();
-
+    free(ennemis);
 
     return 0;
 }
