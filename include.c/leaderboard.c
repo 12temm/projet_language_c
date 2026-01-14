@@ -4,7 +4,12 @@
 
 #define MAX_SCORES 5
 #define SCORE_FILE "scores.txt"
-
+void reset_scores_file() {
+    FILE* file = fopen("assets/scores.txt", "w");
+    if (file) {
+        fclose(file);
+    }
+}
 
 typedef struct {
     char name[20];
@@ -88,6 +93,10 @@ int show_leaderboard_loop(SDL_Window* window, SDL_Renderer* renderer, TTF_Font* 
 
     SDL_Rect backButtonRect = {50, 700, 150, 50};
 
+    int w, h;
+    SDL_GetWindowSize(window, &w, &h);
+    SDL_Rect resetButtonRect = {w - 200, 700, 150, 50};
+
     while (running) {
         while (SDL_PollEvent(&event)) {
             if (event.type == SDL_QUIT) {
@@ -101,6 +110,18 @@ int show_leaderboard_loop(SDL_Window* window, SDL_Renderer* renderer, TTF_Font* 
                     my >= backButtonRect.y && my <= backButtonRect.y + backButtonRect.h) {
                     return 1;
                 }
+                if (mx >= resetButtonRect.x && mx <= resetButtonRect.x + resetButtonRect.w &&
+                    my >= resetButtonRect.y && my <= resetButtonRect.y + resetButtonRect.h) {
+
+                    reset_scores_file();
+
+
+                    for (int i = 0; i < MAX_SCORES; i++) {
+                        strcpy(scores[i].name, "---");
+                        scores[i].score = 0;
+                    }
+                    save_scores();
+                    }
             }
         }
 
@@ -119,7 +140,17 @@ int show_leaderboard_loop(SDL_Window* window, SDL_Renderer* renderer, TTF_Font* 
         SDL_SetRenderDrawColor(renderer, 100, 100, 100, 255);
         SDL_RenderFillRect(renderer, &backButtonRect);
         render_text_centered(renderer, font, "RETOUR", backButtonRect.x + 75, backButtonRect.y + 10, white);
+        int mx_draw, my_draw;
+        SDL_GetMouseState(&mx_draw, &my_draw);
 
+        if (mx_draw >= resetButtonRect.x && mx_draw <= resetButtonRect.x + resetButtonRect.w &&
+            my_draw >= resetButtonRect.y && my_draw <= resetButtonRect.y + resetButtonRect.h)
+            SDL_SetRenderDrawColor(renderer, 255, 50, 50, 255);
+        else
+            SDL_SetRenderDrawColor(renderer, 200, 0, 0, 255);
+
+        SDL_RenderFillRect(renderer, &resetButtonRect);
+        render_text_centered(renderer, font, "RESET", resetButtonRect.x + resetButtonRect.w/2, resetButtonRect.y + 10, white);
         SDL_RenderPresent(renderer);
     }
     return 1;

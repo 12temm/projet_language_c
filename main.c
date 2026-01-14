@@ -6,8 +6,6 @@
 #include <math.h>
 #include <string.h>
 
-
-
 #include "structure.h"
 #include "init_global.h"
 #include "menu.h"
@@ -16,7 +14,7 @@
 #include "entity.h"
 #include "leaderboard.h"
 #include "victory.h"
-
+#include "game_logic.h"
 
 int isMouseInside(SDL_Rect rect, int x, int y) {
     return (x >= rect.x && x <= rect.x + rect.w && y >= rect.y && y <= rect.y + rect.h);
@@ -68,10 +66,7 @@ void loadConfig(char *filename, Config *config) {
         }
     }
     fclose(file);
-
 }
-
-
 
 int main(int argc, char* argv[]) {
 
@@ -88,9 +83,7 @@ int main(int argc, char* argv[]) {
     TTF_Font* font = TTF_OpenFont("assets/fonts/Open_Sans/OpenSans-VariableFont_wdth,wght.ttf", 24);
     init_global(font);
 
-
     Mix_Music* musicGame = Mix_LoadMUS("assets/sounds/game_music.mp3");
-
     Mix_Music* musicMenu = Mix_LoadMUS("assets/sounds/menu_music.mp3");
     if (!musicMenu) {
         printf("Mix_LoadMUS Error: %s\n", Mix_GetError());
@@ -98,9 +91,7 @@ int main(int argc, char* argv[]) {
         SDL_Quit();
         return 1;
     }
-    printf("Playing music...\n");
     Mix_PlayMusic(musicMenu, -1);
-
 
     Config config;
     loadConfig("assets/config.txt", &config);
@@ -115,7 +106,6 @@ int main(int argc, char* argv[]) {
                                           SDL_WINDOW_SHOWN);
     window_error(window);
 
-
     SDL_Color color = { 255, 255, 255 };
 
     SDL_Renderer* renderer = SDL_CreateRenderer(window, -1, 0);
@@ -124,7 +114,6 @@ int main(int argc, char* argv[]) {
     SDL_FreeSurface(surface);
 
     Mix_Music* musicDeath = Mix_LoadMUS("assets/sounds/death_music.mp3");
-
 
     SDL_Surface* background = IMG_Load("assets/images/background_game.png");
     surface_background_check(window, renderer, texture, background);
@@ -137,9 +126,6 @@ int main(int argc, char* argv[]) {
     SDL_Texture *texture_object_background = SDL_CreateTextureFromSurface(renderer, object_background);
     SDL_FreeSurface(object_background);
     texture_background_check(window, renderer, texture, texture_object_background);
-
-
-
 
     SDL_Surface* gameoverSurface = IMG_Load("assets/images/game_over.png");
     if (!gameoverSurface) {
@@ -154,16 +140,12 @@ int main(int argc, char* argv[]) {
     rect_gameover.w = w_window;
     rect_gameover.h = h_window;
 
-
-
-
     #define NUM_BALLES 20
     Proj balles[NUM_BALLES];
 
     for (int i = 0; i < NUM_BALLES; i++) {
         balles[i].active = 0;
     }
-
 
     SDL_Surface* balleSurface = IMG_Load("assets/images/balle.png");
     if (!balleSurface) {
@@ -173,7 +155,6 @@ int main(int argc, char* argv[]) {
     SDL_Texture* balleTexture = SDL_CreateTextureFromSurface(renderer, balleSurface);
     SDL_FreeSurface(balleSurface);
 
-
     Char* ennemis = NULL;
     ennemis = malloc(sizeof(Char) * config.numEnnemi);
     if (ennemis == NULL) {
@@ -181,10 +162,10 @@ int main(int argc, char* argv[]) {
         return 1;
     }
     resetEnnemis(ennemis, config.numEnnemi);
-
+    for (int i = 0; i < config.numEnnemi; i++) {
+        ennemis[i].dead = 0;
+    }
     for (int i = 0; i <config.numEnnemi; i++) {
-
-
         SDL_Surface* mechant_right = IMG_Load("assets/images/mechantR.png");
         ennemis[i].textureR = SDL_CreateTextureFromSurface(renderer, mechant_right);
         SDL_FreeSurface(mechant_right);
@@ -193,7 +174,6 @@ int main(int argc, char* argv[]) {
         ennemis[i].textureL = SDL_CreateTextureFromSurface(renderer, mechant_left);
         SDL_FreeSurface(mechant_left);
     }
-
 
     Char player;
 
@@ -227,8 +207,6 @@ int main(int argc, char* argv[]) {
     arme.normal_texture = SDL_CreateTextureFromSurface(renderer, armeS);
     SDL_FreeSurface(couteau);
     SDL_FreeSurface(armeS);
-
-
 
     SDL_Surface* bonhomme_right = IMG_Load("assets/images/bonhommeR.png");
     player.textureR = SDL_CreateTextureFromSurface(renderer, bonhomme_right);
@@ -295,53 +273,27 @@ int main(int argc, char* argv[]) {
     SDL_Texture* quitText = SDL_CreateTextureFromSurface(renderer, quitSurface);
     SDL_FreeSurface(quitSurface);
 
-
     SDL_Rect rect;
-
 
     int running = 1;
     SDL_Event e;
 
     while (running) {
 
+        int mx, my;
+        SDL_GetMouseState(&mx, &my);
 
         while (SDL_PollEvent(&e)) {
 
             if (e.type == SDL_QUIT)
                 running = 0;
 
-            if (inGame) {
-                player.vx = 0;
-                player.vy = 0;
-
-                if (state[SDL_SCANCODE_A]) {
-                    player.vx -= player.speed;
-                    player.orientation = 2;
-                }
-                if (state[SDL_SCANCODE_D]) {
-                    player.vx += player.speed;
-                    player.orientation = 1;
-                }
-                if (state[SDL_SCANCODE_W]) player.vy -= player.speed;
-                if (state[SDL_SCANCODE_S]) player.vy += player.speed;
-
-                float len = sqrtf(player.vx * player.vx + player.vy * player.vy);
-                if (len > 0) {
-                    player.vx = (player.vx / len) * player.speed;
-                    player.vy = (player.vy / len) * player.speed;
-                }
-
-                if (player.vx != 0 || player.vy != 0) {
-                    player.moving = 1;
-                } else {
-                    player.moving = 0;
-                }
+            if (e.type == SDL_MOUSEBUTTONDOWN && e.button.button == SDL_BUTTON_LEFT && inGame && pickedGun) {
+                player_shoot_logic(balles, NUM_BALLES, &player, e.button.x, e.button.y, balleTexture);
             }
 
-
             if (e.type == SDL_MOUSEBUTTONDOWN && e.button.button == SDL_BUTTON_LEFT) {
-                int mx = e.button.x;
-                int my = e.button.y;
+
                 Button swordButton ={{100, 100, 200, 200}, {0, 200, 0, 255}, "Sword",1};
                 Button gunButton ={{300, 100, 200, 200}, {0, 200, 0, 255}, "Gun",1};
 
@@ -394,7 +346,6 @@ int main(int argc, char* argv[]) {
 
                     resetEnnemis(ennemis, config.numEnnemi);
 
-
                     Mix_HaltMusic();
                     Mix_PlayMusic(musicGame, -1);
                 }
@@ -419,7 +370,8 @@ int main(int argc, char* argv[]) {
                 else if (isMouseInside(scoresDeathButton.rect, mx, my) && inDeathMenu) {
                     show_leaderboard_loop(window, renderer, font);
                 }
-                if ((isMouseInside(menuButton.rect, mx, my)) && (inWinMenu)) {
+                else if (inWinMenu) {
+                    if ((isMouseInside(menuButton.rect, mx, my)) && (inWinMenu)) {
                         inWinMenu = 0;
                         inMenu = 1;
                         playButton.visible = 1;
@@ -429,7 +381,6 @@ int main(int argc, char* argv[]) {
                         enemies_killed = 0;
 
                         resetEnnemis(ennemis, config.numEnnemi);
-
 
                         for (int k = 0; k < config.numEnnemi; k++) {
                             ennemis[k].dead = 0;
@@ -463,9 +414,8 @@ int main(int argc, char* argv[]) {
 
                         resetEnnemis(ennemis, config.numEnnemi);
 
-
                         for (int k = 0; k < config.numEnnemi; k++) {
-                            ennemis[k].dead = 0; // On ressuscite l'ennemi
+                            ennemis[k].dead = 0;
 
                             SDL_Surface* tmpR = IMG_Load("assets/images/mechantR.png");
                             ennemis[k].textureR = SDL_CreateTextureFromSurface(renderer, tmpR);
@@ -486,170 +436,11 @@ int main(int argc, char* argv[]) {
                    else if ((isMouseInside(scoresDeathButton.rect, mx, my)) && (inWinMenu)) {
                        show_leaderboard_loop(window, renderer, font);
                    }
-
-                if (e.type == SDL_MOUSEBUTTONDOWN &&
-                    e.button.button == SDL_BUTTON_LEFT &&
-                    inGame && pickedGun) {
-
-                    int mx = e.button.x;
-                    int my = e.button.y;
-
-                    for (int i = 0; i < NUM_BALLES; i++) {
-                        if (!balles[i].active) {
-
-                            balles[i].active = 1;
-
-                            balles[i].x = player.x + player.rect.w / 2;
-                            balles[i].y = player.y + player.rect.h / 2;
-
-                            float dx = mx - balles[i].x;
-                            float dy = my - balles[i].y;
-
-                            float length = sqrtf(dx * dx + dy * dy);
-                            if (length == 0) length = 1;
-
-                            dx /= length;
-                            dy /= length;
-
-                            balles[i].speed = 8;
-                            balles[i].vx = dx * balles[i].speed;
-                            balles[i].vy = dy * balles[i].speed;
-                            balles[i].rect.w = 10;
-                            balles[i].rect.h = 4;
-                            balles[i].rect.x = (int)balles[i].x;
-                            balles[i].rect.y = (int)balles[i].y;
-
-                            balles[i].texture = balleTexture;
-
-                            break;
-                        }
-                    }
-                    }
-
-
-
                 }
-
+            }
         }
 
         if (inGame) {
-            for (int i = 0; i < config.numEnnemi; i++) {
-                if (!(ennemis[i].dead == 1)) {
-                    float dx = player.x - ennemis[i].x;
-                    float dy = player.y - ennemis[i].y;
-
-                    float dist = sqrtf(dx*dx + dy*dy);
-                    Uint32 now = SDL_GetTicks();
-
-                    if (dist < 10 && !player.invincible) {
-                        player.health = player.health -1;
-                        player.invincible = 1;
-                        player.invincibleStart = now;
-                    }
-
-
-                    if (dist > 0.1f) {
-                        dx /= dist;
-                        dy /= dist;
-
-                        ennemis[i].vx = dx * ennemis[i].speed;
-                        ennemis[i].vy = dy * ennemis[i].speed;
-
-                        ennemis[i].orientation = (dx >= 0) ? 1 : 2;
-                    }
-
-
-
-                    ennemis[i].x += ennemis[i].vx;
-                    ennemis[i].y += ennemis[i].vy;
-
-                    ennemis[i].rect.x = (int)ennemis[i].x;
-                    ennemis[i].rect.y = (int)ennemis[i].y;
-                }
-                }
-
-
-            if (player.invincible) {
-                Uint32 now = SDL_GetTicks();
-                if (now - player.invincibleStart >= player.invincibleTime) {
-                    player.invincible = 0;
-                }
-            }
-
-            for (int i = 0; i < NUM_BALLES; i++) {
-                if (balles[i].active) {
-
-                    balles[i].x += balles[i].vx;
-                    balles[i].y += balles[i].vy;
-
-                    balles[i].rect.x = (int)balles[i].x;
-                    balles[i].rect.y = (int)balles[i].y;
-
-                    if (balles[i].x < 0 || balles[i].x > w_window ||
-                        balles[i].y < 0 || balles[i].y > h_window) {
-                        balles[i].active = 0;
-                        }
-                }
-            }
-
-
-        }
-
-
-
-        SDL_SetRenderDrawColor(renderer, 30, 30, 30, 255);
-        SDL_RenderClear(renderer);
-
-        int mx, my;
-        SDL_GetMouseState(&mx, &my);
-
-        if (playButton.visible) {
-            if (isMouseInside(playButton.rect, mx, my))
-                SDL_SetRenderDrawColor(renderer, 0, 255, 0, 255);
-            else
-                SDL_SetRenderDrawColor(renderer, 0, 200, 0, 255);
-            SDL_RenderFillRect(renderer, &playButton.rect);
-
-            SDL_Rect playRectText = {0, 0, 0, 0};
-            SDL_QueryTexture(playText, NULL, NULL, &playRectText.w, &playRectText.h);
-            playRectText.x = playButton.rect.x + (playButton.rect.w - playRectText.w) / 2;
-            playRectText.y = playButton.rect.y + (playButton.rect.h - playRectText.h) / 2;
-            SDL_RenderCopy(renderer, playText, NULL, &playRectText);
-        }
-
-
-
-        if (quitButton.visible) {
-            if (isMouseInside(quitButton.rect, mx, my))
-                SDL_SetRenderDrawColor(renderer, 255, 0, 0, 255);
-            else
-                SDL_SetRenderDrawColor(renderer, 200, 0, 0, 255);
-            SDL_RenderFillRect(renderer, &quitButton.rect);
-
-            SDL_Rect quitRectText = {0, 0, 0, 0};
-            SDL_QueryTexture(quitText, NULL, NULL, &quitRectText.w, &quitRectText.h);
-            quitRectText.x = quitButton.rect.x + (quitButton.rect.w - quitRectText.w) / 2;
-            quitRectText.y = quitButton.rect.y + (quitButton.rect.h - quitRectText.h) / 2;
-            SDL_RenderCopy(renderer, quitText, NULL, &quitRectText);
-        }
-        if (inMenu) {
-            if (isMouseInside(scoresButton.rect, mx, my))
-                SDL_SetRenderDrawColor(renderer, 0, 0, 255, 255);
-            else
-                SDL_SetRenderDrawColor(renderer, 0, 0, 200, 255);
-            SDL_RenderFillRect(renderer, &scoresButton.rect);
-
-            SDL_Rect scoresRectText = {0, 0, 0, 0};
-            SDL_QueryTexture(scoresText, NULL, NULL, &scoresRectText.w, &scoresRectText.h);
-            scoresRectText.x = scoresButton.rect.x + (scoresButton.rect.w - scoresRectText.w) / 2;
-            scoresRectText.y = scoresButton.rect.y + (scoresButton.rect.h - scoresRectText.h) / 2;
-            SDL_RenderCopy(renderer, scoresText, NULL, &scoresRectText);
-        }
-
-       if (inMenu2 == 1) {
-           choose_weapon(window, font, color, renderer, mx, my);
-       }
-        if (inGame == 1) {
             if (player.moving) {
                 Uint32 now = SDL_GetTicks();
                 if (now - player.lastFrameTime > player.frameDelay) {
@@ -660,39 +451,34 @@ int main(int argc, char* argv[]) {
                 player.currentFrame = 0;
             }
 
+            update_player_logic(&player, state, w_window, h_window);
+            update_enemies_logic(ennemis, config.numEnnemi, &player);
+            update_bullets_logic(balles, NUM_BALLES, w_window, h_window);
+            int kills = check_collisions_logic(ennemis, config.numEnnemi, balles, NUM_BALLES, &arme, pickedSword, pickedGun);
+            enemies_killed += kills;
+
+            int total_dead = 0;
+            for(int i=0; i<config.numEnnemi; i++) {
+                if(ennemis[i].dead) total_dead++;
+            }
+
+            if (total_dead == config.numEnnemi) {
+                inGame = 0;
+                inWinMenu = 1;
+                update_high_score("Player", enemies_killed);
+                Mix_HaltMusic();
+            }
+
             show_background(window, renderer, texture,texture_background, rect);
-
-            double border_x = w_window*3.7/100;
-            if (player.x <= border_x) {
-                player.x = border_x + 1;
-            }
-            border_x = w_window*6/100;
-            if (player.x >= w_window-border_x) {
-                player.x = w_window-border_x - 1 ;
-            }
-            double border_y = h_window*2.6/100;
-            if (player.y <= border_y) {
-                player.y = border_y + 1 ;
-            }
-            border_y = h_window*3.6/100;
-            if (player.y >= h_window-border_y) {
-                player.y = w_window-border_y - 1 ;
-            }
-
-            player.x += player.vx;
-            player.y += player.vy;
-
-            player.rect.x = (int)player.x;
-            player.rect.y = (int)player.y;
-            arme.rect.y= (int)player.y;
 
             SDL_Point center;
             center.x = (player.rect.w/2);
             center.y = (player.rect.h/2);
             Uint32 now = SDL_GetTicks()/config.attckSpeed;
+            arme.rect.x = (int)player.x;
+            arme.rect.y = (int)player.y;
 
             if (player.orientation == 1) {
-                arme.rect.x= (int)player.x;
                 if (player.currentFrame == 0) {
                     SDL_RenderCopy(renderer, player.textureR, NULL, &player.rect);
                     if (pickedSword == 1) {
@@ -712,7 +498,6 @@ int main(int argc, char* argv[]) {
                     }
                 }
             } else {
-                arme.rect.x= (int)player.x;
                 if (player.currentFrame == 0) {
                     SDL_RenderCopy(renderer, player.textureL, NULL, &player.rect);
                     if (pickedSword == 1) {
@@ -734,9 +519,9 @@ int main(int argc, char* argv[]) {
             }
 
             for (int i = 0; i < config.numEnnemi; i++) {
-                if (ennemis[i].orientation == 1)
+                if (ennemis[i].orientation == 1 && !ennemis[i].dead)
                     SDL_RenderCopy(renderer, ennemis[i].textureR, NULL, &ennemis[i].rect);
-                else
+                else if (!ennemis[i].dead)
                     SDL_RenderCopy(renderer, ennemis[i].textureL, NULL, &ennemis[i].rect);
             }
 
@@ -746,75 +531,6 @@ int main(int argc, char* argv[]) {
                 }
             }
 
-
-
-            int count = 0;
-            if (pickedSword) {
-                for (int i = 0; i < config.numEnnemi; i++) {
-                    if (!(ennemis[i].dead == 1)) {
-                        SDL_Rect rect_arme;
-                        rect_arme.x = arme.rect.x;
-                        rect_arme.y = arme.rect.y;
-                        rect_arme.w = arme.rect.w;
-                        rect_arme.h = arme.rect.h;
-
-                        SDL_Rect rect_ennemis;
-                        rect_ennemis.x = ennemis[i].rect.x;
-                        rect_ennemis.y = ennemis[i].rect.y;
-                        rect_ennemis.w = ennemis[i].rect.w;
-                        rect_ennemis.h = ennemis[i].rect.h;
-                        if(SDL_HasIntersection(&rect_ennemis, &rect_arme) == SDL_TRUE) {
-
-                            ennemis[i].x = 1000;
-                            ennemis[i].y = 1000;
-                            ennemis[i].dead = 1;
-                            count++;
-                            enemies_killed++;
-                        }
-                    }
-                }
-            }
-                if (pickedGun ==1) {
-                for (int i = 0; i < config.numEnnemi; i++) {
-                    if (!(ennemis[i].dead == 1)) {
-                        for (int j = 0; j < NUM_BALLES; j++) {
-                            if (balles[j].active) {
-                                SDL_Rect rect_balle;
-                                rect_balle.x = balles[j].rect.x;
-                                rect_balle.y = balles[j].rect.y;
-                                rect_balle.w = balles[j].rect.w;
-                                rect_balle.h = balles[j].rect.h;
-
-                                SDL_Rect rect_ennemis;
-                                rect_ennemis.x = ennemis[i].rect.x;
-                                rect_ennemis.y = ennemis[i].rect.y;
-                                rect_ennemis.w = ennemis[i].rect.w;
-                                rect_ennemis.h = ennemis[i].rect.h;
-                                if(SDL_HasIntersection(&rect_ennemis, &rect_balle) == SDL_TRUE) {
-                                    SDL_DestroyTexture(ennemis[i].textureR);
-                                    SDL_DestroyTexture(ennemis[i].textureL);
-                                    ennemis[i].x = 1000;
-                                    ennemis[i].y = 1000;
-                                    ennemis[i].dead = 1;
-                                    count++;
-                                    balles[j].active = 0;
-                                    enemies_killed++;
-                                }
-                            }
-                        }
-                    }
-                    else {
-                        count++;
-                    }
-            }
-        }
-            if (count == config.numEnnemi) {
-                inGame = 0;
-                inWinMenu = 1;
-                update_high_score("Player", enemies_killed);
-                Mix_HaltMusic();
-            }
-
             show_background(window, renderer, texture,texture_object_background, rect);
 
             drawHealthBar(renderer, 20, 20, 200, 20, player.health, player.maxHealth);
@@ -822,7 +538,7 @@ int main(int argc, char* argv[]) {
             char scoreText[32];
             sprintf(scoreText, "Score: %d", enemies_killed);
 
-            SDL_Color scoreColor = {255, 255, 255, 255}; // Blanc
+            SDL_Color scoreColor = {255, 255, 255, 255};
             SDL_Surface* surfaceScore = TTF_RenderText_Blended(font, scoreText, scoreColor);
 
             if (surfaceScore) {
@@ -848,6 +564,51 @@ int main(int argc, char* argv[]) {
                 inDeathMenu = 1;
                 inGame = 0;
             }
+        }
+
+        SDL_SetRenderDrawColor(renderer, 30, 30, 30, 255);
+        if(!inGame) SDL_RenderClear(renderer);
+
+        if (inMenu) {
+            if (isMouseInside(playButton.rect, mx, my))
+                SDL_SetRenderDrawColor(renderer, 0, 255, 0, 255);
+            else
+                SDL_SetRenderDrawColor(renderer, 0, 200, 0, 255);
+            SDL_RenderFillRect(renderer, &playButton.rect);
+
+            SDL_Rect playRectText = {0, 0, 0, 0};
+            SDL_QueryTexture(playText, NULL, NULL, &playRectText.w, &playRectText.h);
+            playRectText.x = playButton.rect.x + (playButton.rect.w - playRectText.w) / 2;
+            playRectText.y = playButton.rect.y + (playButton.rect.h - playRectText.h) / 2;
+            SDL_RenderCopy(renderer, playText, NULL, &playRectText);
+
+            if (isMouseInside(quitButton.rect, mx, my))
+                SDL_SetRenderDrawColor(renderer, 255, 0, 0, 255);
+            else
+                SDL_SetRenderDrawColor(renderer, 200, 0, 0, 255);
+            SDL_RenderFillRect(renderer, &quitButton.rect);
+
+            SDL_Rect quitRectText = {0, 0, 0, 0};
+            SDL_QueryTexture(quitText, NULL, NULL, &quitRectText.w, &quitRectText.h);
+            quitRectText.x = quitButton.rect.x + (quitButton.rect.w - quitRectText.w) / 2;
+            quitRectText.y = quitButton.rect.y + (quitButton.rect.h - quitRectText.h) / 2;
+            SDL_RenderCopy(renderer, quitText, NULL, &quitRectText);
+
+            if (isMouseInside(scoresButton.rect, mx, my))
+                SDL_SetRenderDrawColor(renderer, 0, 0, 255, 255);
+            else
+                SDL_SetRenderDrawColor(renderer, 0, 0, 200, 255);
+            SDL_RenderFillRect(renderer, &scoresButton.rect);
+
+            SDL_Rect scoresRectText = {0, 0, 0, 0};
+            SDL_QueryTexture(scoresText, NULL, NULL, &scoresRectText.w, &scoresRectText.h);
+            scoresRectText.x = scoresButton.rect.x + (scoresButton.rect.w - scoresRectText.w) / 2;
+            scoresRectText.y = scoresButton.rect.y + (scoresButton.rect.h - scoresRectText.h) / 2;
+            SDL_RenderCopy(renderer, scoresText, NULL, &scoresRectText);
+        }
+
+        if (inMenu2 == 1) {
+            choose_weapon(window, font, color, renderer, mx, my);
         }
 
         if (inDeathMenu == 1) {
@@ -879,7 +640,6 @@ int main(int argc, char* argv[]) {
             scoresDeathRectText.x = scoresDeathButton.rect.x + (scoresDeathButton.rect.w - scoresDeathRectText.w) / 2;
             scoresDeathRectText.y = scoresDeathButton.rect.y + (scoresDeathButton.rect.h - scoresDeathRectText.h) / 2;
             SDL_RenderCopy(renderer, scoresDeathText, NULL, &scoresDeathRectText);
-
 
             if (isMouseInside(menuButton.rect, mx, my))
                 SDL_SetRenderDrawColor(renderer, 200, 0, 200, 255);
@@ -925,8 +685,8 @@ int main(int argc, char* argv[]) {
     SDL_DestroyTexture(player.textureR3);
     SDL_DestroyTexture(player.textureL3);
     for (int i = 0; i < config.numEnnemi; i++) {
-        SDL_DestroyTexture(ennemis[i].textureR);
-        SDL_DestroyTexture(ennemis[i].textureL);
+        if(ennemis[i].textureR) SDL_DestroyTexture(ennemis[i].textureR);
+        if(ennemis[i].textureL) SDL_DestroyTexture(ennemis[i].textureL);
     }
     destroy_background(window,renderer,texture);
     TTF_CloseFont(font);
