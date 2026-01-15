@@ -100,7 +100,7 @@ int show_leaderboard_loop(SDL_Window* window, SDL_Renderer* renderer, TTF_Font* 
     while (running) {
         while (SDL_PollEvent(&event)) {
             if (event.type == SDL_QUIT) {
-                return 0; // On quitte tout le jeu
+                return 0;
             }
             if (event.type == SDL_MOUSEBUTTONDOWN) {
                 int mx = event.button.x;

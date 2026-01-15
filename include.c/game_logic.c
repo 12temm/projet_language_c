@@ -3,7 +3,7 @@
 #include <math.h>
 #include <stdio.h>
 
-// Logique de déplacement du joueur (Ton code ZQSD + Bordures)
+
 void update_player_logic(Char *player, const Uint8 *state, int w_window, int h_window) {
     player->vx = 0;
     player->vy = 0;
@@ -27,7 +27,7 @@ void update_player_logic(Char *player, const Uint8 *state, int w_window, int h_w
 
     player->moving = (player->vx != 0 || player->vy != 0) ? 1 : 0;
 
-    // Tes bordures (copiées du main)
+
     double border_x = w_window*3.7/100;
     if (player->x <= border_x) player->x = border_x + 1;
 
@@ -46,7 +46,7 @@ void update_player_logic(Char *player, const Uint8 *state, int w_window, int h_w
     player->rect.y = (int)player->y;
 }
 
-// Logique des ennemis (Ton code de suivi + dégâts)
+
 void update_enemies_logic(Char *ennemis, int numEnnemi, Char *player) {
     Uint32 now = SDL_GetTicks();
     for (int i = 0; i < numEnnemi; i++) {
@@ -78,7 +78,7 @@ void update_enemies_logic(Char *ennemis, int numEnnemi, Char *player) {
     }
 }
 
-// Logique des balles
+
 void update_bullets_logic(Proj *balles, int numBalles, int w_window, int h_window) {
     for (int i = 0; i < numBalles; i++) {
         if (balles[i].active) {
@@ -94,7 +94,6 @@ void update_bullets_logic(Proj *balles, int numBalles, int w_window, int h_windo
     }
 }
 
-// Logique du tir (Clic gauche)
 void player_shoot_logic(Proj *balles, int numBalles, Char *player, int mx, int my, SDL_Texture *balleTexture) {
     for (int i = 0; i < numBalles; i++) {
         if (!balles[i].active) {
@@ -107,7 +106,7 @@ void player_shoot_logic(Proj *balles, int numBalles, Char *player, int mx, int m
             float dy = my - balles[i].y;
 
             float length = sqrtf(dx * dx + dy * dy);
-            if (length == 0) length = 1; // Sécurité division par zéro
+            if (length == 0) length = 1;
 
             balles[i].speed = 8;
             balles[i].vx = (dx / length) * balles[i].speed;
@@ -118,17 +117,16 @@ void player_shoot_logic(Proj *balles, int numBalles, Char *player, int mx, int m
             balles[i].rect.x = (int)balles[i].x;
             balles[i].rect.y = (int)balles[i].y;
 
-            balles[i].texture = balleTexture; // On assigne l'image
+            balles[i].texture = balleTexture;
             break;
         }
     }
 }
 
-// Logique de collision (Retourne le nombre de tués cette frame)
 int check_collisions_logic(Char *ennemis, int numEnnemi, Proj *balles, int numBalles, Char *arme, int pickedSword, int pickedGun) {
     int kills = 0;
 
-    // Collisions Épée
+
     if (pickedSword) {
         for (int i = 0; i < numEnnemi; i++) {
             if (!ennemis[i].dead) {
@@ -136,7 +134,7 @@ int check_collisions_logic(Char *ennemis, int numEnnemi, Proj *balles, int numBa
                 SDL_Rect rEnnemi = {ennemis[i].rect.x, ennemis[i].rect.y, ennemis[i].rect.w, ennemis[i].rect.h};
 
                 if (SDL_HasIntersection(&rEnnemi, &rArme)) {
-                    // IMPORTANT: On ne détruit PAS les textures ici (règle fixée avant)
+
                     ennemis[i].x = 1000;
                     ennemis[i].y = 1000;
                     ennemis[i].dead = 1;
@@ -146,7 +144,7 @@ int check_collisions_logic(Char *ennemis, int numEnnemi, Proj *balles, int numBa
         }
     }
 
-    // Collisions Pistolet
+
     if (pickedGun) {
         for (int i = 0; i < numEnnemi; i++) {
             if (!ennemis[i].dead) {
