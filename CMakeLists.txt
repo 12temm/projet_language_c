@@ -16,6 +16,10 @@ add_executable(MySDLProject main.c
         include.c/entity.c
         include.h/leaderboard.h
         include.c/leaderboard.c
+        include.h/victory.h
+        include.c/victory.c
+        include.h/game_logic.h
+        include.c/game_logic.c
 )
 
 target_include_directories(MySDLProject PRIVATE
