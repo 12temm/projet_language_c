@@ -123,11 +123,14 @@ void player_shoot_logic(Proj *balles, int numBalles, Char *player, int mx, int m
     }
 }
 
-int check_collisions_logic(Char *ennemis, int numEnnemi, Proj *balles, int numBalles, Char *arme, int pickedSword, int pickedGun) {
+int check_collisions_logic(Char *ennemis, int numEnnemi, Proj *balles, int numBalles, Char *arme, Char *player, int pickedSword, int pickedGun) {
     int kills = 0;
 
-
     if (pickedSword) {
+        // Mise à jour de la hitbox de l'arme
+        arme->rect.x = (int)player->x;
+        arme->rect.y = (int)player->y;
+
         for (int i = 0; i < numEnnemi; i++) {
             if (!ennemis[i].dead) {
                 SDL_Rect rArme = {arme->rect.x, arme->rect.y, arme->rect.w, arme->rect.h};

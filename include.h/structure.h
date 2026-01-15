@@ -1,21 +1,27 @@
 #include <SDL2/SDL.h>
 
-typedef struct {
+typedef struct button {
     SDL_Rect rect;
     SDL_Color color;
-    const char* label;
+    char label[50];
     int visible;
 } Button;
 
-typedef struct {
+typedef struct character {
     float x, y;
     float vx, vy;
-    float speed;
-    int orientation;
-    int moving;
     int health;
     int maxHealth;
-    int dead;
+    int speed;
+    int moving;
+    int orientation;
+    int currentFrame;
+    Uint32 lastFrameTime;
+    int frameDelay;
+    int invincible;
+    Uint32 invincibleStart;
+    int invincibleTime;
+    SDL_Rect rect;
     SDL_Texture* textureR;
     SDL_Texture* textureL;
     SDL_Texture* textureR2;
@@ -23,13 +29,7 @@ typedef struct {
     SDL_Texture* textureR3;
     SDL_Texture* textureL3;
     SDL_Texture* normal_texture;
-    SDL_Rect rect;
-    int currentFrame;
-    Uint32 lastFrameTime;
-    Uint32 frameDelay;
-    int invincible;
-    Uint32 invincibleStart;
-    Uint32 invincibleTime;
+    int dead;
 } Char;
 
 typedef struct config {
@@ -39,14 +39,11 @@ typedef struct config {
     int numEnnemi;
 } Config;
 
-typedef struct {
+typedef struct projectile {
     float x, y;
     float vx, vy;
-    float speed;
-    int moving;
     int active;
-    SDL_Texture* texture;
+    float speed;
     SDL_Rect rect;
+    SDL_Texture* texture;
 } Proj;
-
-

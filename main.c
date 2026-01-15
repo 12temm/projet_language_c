@@ -15,58 +15,11 @@
 #include "leaderboard.h"
 #include "victory.h"
 #include "game_logic.h"
-
-int isMouseInside(SDL_Rect rect, int x, int y) {
-    return (x >= rect.x && x <= rect.x + rect.w && y >= rect.y && y <= rect.y + rect.h);
-}
-
-void drawHealthBar(SDL_Renderer* renderer, int x, int y, int w, int h, int health, int maxHealth) {
-    SDL_Rect bgRect = {x, y, w, h};
-    SDL_SetRenderDrawColor(renderer, 200, 0, 0, 255);
-    SDL_RenderFillRect(renderer, &bgRect);
-
-    if (health > 0) {
-        int barWidth = (int)((float)health / maxHealth * w);
-        SDL_Rect healthRect = {x, y, barWidth, h};
-        SDL_SetRenderDrawColor(renderer, 0, 200, 0, 255);
-        SDL_RenderFillRect(renderer, &healthRect);
-    }
-}
-
-void loadConfig(char *filename, Config *config) {
-    FILE *file = fopen(filename, "r");
-    if (file == NULL) {
-        printf("Le fichier de config (%s) n'a pas pu etre lu .\n", filename);
-        exit(EXIT_FAILURE);
-    }
-    char line[256];
-    while (fgets(line, sizeof(line), file)) {
-        char* chariot = strchr(line, '\n');
-        if(chariot != NULL) {
-            *chariot = '\0';
-        }
-        char *equalSign = strchr(line, '=');
-        if (equalSign == NULL) {
-            continue;
-        }
-        *equalSign = '\0';
-        char *key = line;
-        char *value = equalSign + 1;
-        if (strcmp(key, "WINDOW_HEIGHT") == 0) {
-            config->windowHeight = atoi(value);
-        }
-        if (strcmp(key, "WINDOW_WIDTH") == 0) {
-            config->windowWidth = atoi(value);
-        }
-        if (strcmp(key, "ATTACK_SPEED") == 0) {
-            config->attckSpeed = atoi(value);
-        }
-        if (strcmp(key, "NUM_ENNEMI") == 0) {
-            config->numEnnemi = atoi(value);
-        }
-    }
-    fclose(file);
-}
+#include "config_loader.h"
+#include "utils.h"
+#include "init_assets.h"
+#include "cleanup.h"
+#include "draw.h"
 
 int main(int argc, char* argv[]) {
 
@@ -162,75 +115,14 @@ int main(int argc, char* argv[]) {
         return 1;
     }
     resetEnnemis(ennemis, config.numEnnemi);
-    for (int i = 0; i < config.numEnnemi; i++) {
-        ennemis[i].dead = 0;
-    }
-    for (int i = 0; i <config.numEnnemi; i++) {
-        SDL_Surface* mechant_right = IMG_Load("assets/images/mechantR.png");
-        ennemis[i].textureR = SDL_CreateTextureFromSurface(renderer, mechant_right);
-        SDL_FreeSurface(mechant_right);
 
-        SDL_Surface* mechant_left = IMG_Load("assets/images/mechantL.png");
-        ennemis[i].textureL = SDL_CreateTextureFromSurface(renderer, mechant_left);
-        SDL_FreeSurface(mechant_left);
-    }
+    init_enemy_assets(renderer, ennemis, config.numEnnemi);
 
     Char player;
-
-    player.health = 3;
-    player.moving = 0;
-    player.x = 300;
-    player.y = 300;
-    player.vx = 0;
-    player.vy = 0;
-    player.speed = 2;
-    player.rect.w = 20;
-    player.rect.h = 20;
-    player.orientation = 1;
-    player.currentFrame = 0;
-    player.lastFrameTime = 0;
-    player.frameDelay = 100;
-    player.maxHealth = 3;
-    player.invincible = 0;
-    player.invincibleStart = 0;
-    player.invincibleTime = 1000;
+    init_player_assets(renderer, &player);
 
     Char arme;
-    arme.x = player.x + 50;
-    arme.y = player.y + 50;
-    arme.rect.w = player.rect.w;
-    arme.rect.h = player.rect.h+50;
-
-    SDL_Surface* couteau = IMG_Load("assets/images/couteau.png");
-    SDL_Surface* armeS = IMG_Load("assets/images/arme.png");
-
-    arme.normal_texture = SDL_CreateTextureFromSurface(renderer, armeS);
-    SDL_FreeSurface(couteau);
-    SDL_FreeSurface(armeS);
-
-    SDL_Surface* bonhomme_right = IMG_Load("assets/images/bonhommeR.png");
-    player.textureR = SDL_CreateTextureFromSurface(renderer, bonhomme_right);
-    SDL_FreeSurface(bonhomme_right);
-
-    SDL_Surface* bonhomme_left = IMG_Load("assets/images/bonhommeL.png");
-    player.textureL = SDL_CreateTextureFromSurface(renderer, bonhomme_left);
-    SDL_FreeSurface(bonhomme_left);
-
-    SDL_Surface* bonhomme_right2 = IMG_Load("assets/images/bonhomme2R.png");
-    player.textureR2 = SDL_CreateTextureFromSurface(renderer, bonhomme_right2);
-    SDL_FreeSurface(bonhomme_right2);
-
-    SDL_Surface* bonhomme_left2 = IMG_Load("assets/images/bonhomme2L.png");
-    player.textureL2 = SDL_CreateTextureFromSurface(renderer, bonhomme_left2);
-    SDL_FreeSurface(bonhomme_left2);
-
-    SDL_Surface* bonhomme_right3 = IMG_Load("assets/images/bonhomme3R.png");
-    player.textureR3 = SDL_CreateTextureFromSurface(renderer, bonhomme_right3);
-    SDL_FreeSurface(bonhomme_right3);
-
-    SDL_Surface* bonhomme_left3 = IMG_Load("assets/images/bonhomme3L.png");
-    player.textureL3 = SDL_CreateTextureFromSurface(renderer, bonhomme_left3);
-    SDL_FreeSurface(bonhomme_left3);
+    init_weapon_assets(renderer, &arme, &player);
 
     const Uint8 *state = SDL_GetKeyboardState(NULL);
 
@@ -454,7 +346,7 @@ int main(int argc, char* argv[]) {
             update_player_logic(&player, state, w_window, h_window);
             update_enemies_logic(ennemis, config.numEnnemi, &player);
             update_bullets_logic(balles, NUM_BALLES, w_window, h_window);
-            int kills = check_collisions_logic(ennemis, config.numEnnemi, balles, NUM_BALLES, &arme, pickedSword, pickedGun);
+            int kills = check_collisions_logic(ennemis, config.numEnnemi, balles, NUM_BALLES, &arme, &player, pickedSword, pickedGun);
             enemies_killed += kills;
 
             int total_dead = 0;
@@ -469,91 +361,10 @@ int main(int argc, char* argv[]) {
                 Mix_HaltMusic();
             }
 
-            show_background(window, renderer, texture,texture_background, rect);
-
-            SDL_Point center;
-            center.x = (player.rect.w/2);
-            center.y = (player.rect.h/2);
-            Uint32 now = SDL_GetTicks()/config.attckSpeed;
-            arme.rect.x = (int)player.x;
-            arme.rect.y = (int)player.y;
-
-            if (player.orientation == 1) {
-                if (player.currentFrame == 0) {
-                    SDL_RenderCopy(renderer, player.textureR, NULL, &player.rect);
-                    if (pickedSword == 1) {
-                        SDL_RenderCopyEx(renderer,arme.normal_texture, NULL, &arme.rect, now, &center, SDL_FLIP_VERTICAL);
-                    }
-                }
-                else if (player.currentFrame == 1) {
-                    SDL_RenderCopy(renderer, player.textureR2, NULL, &player.rect);
-                    if (pickedSword == 1) {
-                        SDL_RenderCopyEx(renderer,arme.normal_texture, NULL, &arme.rect, now, &center, SDL_FLIP_VERTICAL);
-                    }
-                }
-                else {
-                    SDL_RenderCopy(renderer, player.textureR3, NULL, &player.rect);
-                    if (pickedSword == 1) {
-                        SDL_RenderCopyEx(renderer,arme.normal_texture, NULL, &arme.rect, now, &center, SDL_FLIP_VERTICAL);
-                    }
-                }
-            } else {
-                if (player.currentFrame == 0) {
-                    SDL_RenderCopy(renderer, player.textureL, NULL, &player.rect);
-                    if (pickedSword == 1) {
-                        SDL_RenderCopyEx(renderer,arme.normal_texture, NULL, &arme.rect, now, &center, SDL_FLIP_VERTICAL);
-                    }
-                }
-                else if (player.currentFrame == 1) {
-                    SDL_RenderCopy(renderer, player.textureL2, NULL, &player.rect);
-                    if (pickedSword == 1) {
-                        SDL_RenderCopyEx(renderer,arme.normal_texture, NULL, &arme.rect, now, &center, SDL_FLIP_VERTICAL);
-                    }
-                }
-                else {
-                    SDL_RenderCopy(renderer, player.textureL3, NULL, &player.rect);
-                    if (pickedSword == 1) {
-                        SDL_RenderCopyEx(renderer,arme.normal_texture, NULL, &arme.rect, now, &center, SDL_FLIP_VERTICAL);
-                    }
-                }
-            }
-
-            for (int i = 0; i < config.numEnnemi; i++) {
-                if (ennemis[i].orientation == 1 && !ennemis[i].dead)
-                    SDL_RenderCopy(renderer, ennemis[i].textureR, NULL, &ennemis[i].rect);
-                else if (!ennemis[i].dead)
-                    SDL_RenderCopy(renderer, ennemis[i].textureL, NULL, &ennemis[i].rect);
-            }
-
-            for (int i = 0; i < NUM_BALLES; i++) {
-                if (balles[i].active) {
-                    SDL_RenderCopy(renderer, balles[i].texture, NULL, &balles[i].rect);
-                }
-            }
-
-            show_background(window, renderer, texture,texture_object_background, rect);
-
-            drawHealthBar(renderer, 20, 20, 200, 20, player.health, player.maxHealth);
-
-            char scoreText[32];
-            sprintf(scoreText, "Score: %d", enemies_killed);
-
-            SDL_Color scoreColor = {255, 255, 255, 255};
-            SDL_Surface* surfaceScore = TTF_RenderText_Blended(font, scoreText, scoreColor);
-
-            if (surfaceScore) {
-                SDL_Texture* textureScore = SDL_CreateTextureFromSurface(renderer, surfaceScore);
-                SDL_Rect rectScore;
-                rectScore.x = 20;
-                rectScore.y = 50;
-                rectScore.w = surfaceScore->w;
-                rectScore.h = surfaceScore->h;
-
-                SDL_RenderCopy(renderer, textureScore, NULL, &rectScore);
-
-                SDL_FreeSurface(surfaceScore);
-                SDL_DestroyTexture(textureScore);
-            }
+            render_game_scene(renderer, &player, ennemis, &arme, config.numEnnemi,
+                              balles, NUM_BALLES,
+                              texture_background, texture_object_background,
+                              pickedSword, config.attckSpeed, font, enemies_killed);
 
             if (player.health <= 0) {
                 Mix_HaltMusic();
@@ -669,36 +480,10 @@ int main(int argc, char* argv[]) {
         SDL_Delay(16);
     }
 
-    Mix_HaltMusic();
-    Mix_FreeMusic(musicMenu);
-    Mix_CloseAudio();
-    SDL_DestroyTexture(playText);
-    SDL_DestroyTexture(quitText);
-    SDL_DestroyTexture(texture);
-    destroy_menu_weapons(window,font,color);
-
-    SDL_DestroyTexture(arme.normal_texture);
-    SDL_DestroyTexture(player.textureR);
-    SDL_DestroyTexture(player.textureL);
-    SDL_DestroyTexture(player.textureR2);
-    SDL_DestroyTexture(player.textureL2);
-    SDL_DestroyTexture(player.textureR3);
-    SDL_DestroyTexture(player.textureL3);
-    for (int i = 0; i < config.numEnnemi; i++) {
-        if(ennemis[i].textureR) SDL_DestroyTexture(ennemis[i].textureR);
-        if(ennemis[i].textureL) SDL_DestroyTexture(ennemis[i].textureL);
-    }
-    destroy_background(window,renderer,texture);
-    TTF_CloseFont(font);
-    TTF_Quit();
-    SDL_DestroyTexture(scoresText);
-    SDL_DestroyRenderer(renderer);
-    SDL_DestroyTexture(scoresDeathText);
-    SDL_DestroyWindow(window);
-
-    destroy_menu_weapons(window, font, color);
-    SDL_Quit();
-    free(ennemis);
+    cleanup_game(window, renderer, font, musicMenu, ennemis,
+                 playText, quitText, texture,
+                 texture_background, texture_object_background, texture_gameover,
+                 balleTexture, scoresText);
 
     return 0;
 }

@@ -20,6 +20,16 @@ add_executable(MySDLProject main.c
         include.c/victory.c
         include.h/game_logic.h
         include.c/game_logic.c
+        include.h/config_loader.h
+        include.c/config_loader.c
+        include.h/utils.h
+        include.c/utils.c
+        include.h/init_assets.h
+        include.c/init_asset.c
+        include.h/cleanup.h
+        include.c/cleanup.c
+        include.h/draw.h
+        include.c/draw.c
 )
 
 target_include_directories(MySDLProject PRIVATE
