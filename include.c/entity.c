@@ -12,9 +12,23 @@ void resetEnnemis(Char ennemis[], int count) {
         ennemis[i].moving = 0;
         ennemis[i].vx = 0;
         ennemis[i].vy = 0;
-        ennemis[i].speed = 1;
-        ennemis[i].rect.w = 15;
-        ennemis[i].rect.h = 15;
+        switch (ennemis[i].type) {
+            case 1:
+                ennemis[i].health = 3;
+                ennemis[i].maxHealth = 3;
+                ennemis[i].speed = 1;
+                ennemis[i].rect.w = 25;
+                ennemis[i].rect.h = 25;
+                break;
+            case 0:
+            default:
+                ennemis[i].health = 1;
+                ennemis[i].maxHealth = 1;
+                ennemis[i].speed = 1;
+                ennemis[i].rect.w = 15;
+                ennemis[i].rect.h = 15;
+                break;
+        }
 
         int side = rand() % 4;
         switch (side) {

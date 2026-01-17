@@ -127,7 +127,6 @@ int check_collisions_logic(Char *ennemis, int numEnnemi, Proj *balles, int numBa
     int kills = 0;
 
     if (pickedSword) {
-        // Mise à jour de la hitbox de l'arme
         arme->rect.x = (int)player->x;
         arme->rect.y = (int)player->y;
 
@@ -138,10 +137,16 @@ int check_collisions_logic(Char *ennemis, int numEnnemi, Proj *balles, int numBa
 
                 if (SDL_HasIntersection(&rEnnemi, &rArme)) {
 
-                    ennemis[i].x = 1000;
-                    ennemis[i].y = 1000;
-                    ennemis[i].dead = 1;
-                    kills++;
+                    ennemis[i].health -= 1;
+                    ennemis[i].x += (ennemis[i].x - player->x) * 0.5f;
+                    ennemis[i].y += (ennemis[i].y - player->y) * 0.5f;
+
+                    if (ennemis[i].health <= 0) {
+                        ennemis[i].x = 1000;
+                        ennemis[i].y = 1000;
+                        ennemis[i].dead = 1;
+                        kills++;
+                    }
                 }
             }
         }
@@ -157,11 +162,15 @@ int check_collisions_logic(Char *ennemis, int numEnnemi, Proj *balles, int numBa
                         SDL_Rect rEnnemi = {ennemis[i].rect.x, ennemis[i].rect.y, ennemis[i].rect.w, ennemis[i].rect.h};
 
                         if (SDL_HasIntersection(&rEnnemi, &rBalle)) {
-                            ennemis[i].x = 1000;
-                            ennemis[i].y = 1000;
-                            ennemis[i].dead = 1;
                             balles[j].active = 0;
-                            kills++;
+                            ennemis[i].health -= 1;
+
+                            if (ennemis[i].health <= 0) {
+                                ennemis[i].x = 1000;
+                                ennemis[i].y = 1000;
+                                ennemis[i].dead = 1;
+                                kills++;
+                            }
                         }
                     }
                 }

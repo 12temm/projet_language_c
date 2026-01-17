@@ -30,6 +30,7 @@ typedef struct character {
     SDL_Texture* textureL3;
     SDL_Texture* normal_texture;
     int dead;
+    int type;
 } Char;
 
 typedef struct config {

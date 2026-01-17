@@ -47,18 +47,30 @@ void init_player_assets(SDL_Renderer* renderer, Char* player) {
 }
 
 void init_enemy_assets(SDL_Renderer* renderer, Char* ennemis, int numEnnemi) {
+    SDL_Surface* sNormal = IMG_Load("assets/images/mechantR.png");
+    SDL_Texture* tNormal = SDL_CreateTextureFromSurface(renderer, sNormal);
+    SDL_FreeSurface(sNormal);
+
+    SDL_Surface* sTank = IMG_Load("assets/images/mechant_tank.png");
+    SDL_Texture* tTank = SDL_CreateTextureFromSurface(renderer, sTank);
+    SDL_FreeSurface(sTank);
+
     for (int i = 0; i < numEnnemi; i++) {
         ennemis[i].dead = 0;
-        
-        SDL_Surface* mechant_right = IMG_Load("assets/images/mechantR.png");
-        ennemis[i].textureR = SDL_CreateTextureFromSurface(renderer, mechant_right);
-        SDL_FreeSurface(mechant_right);
 
-        SDL_Surface* mechant_left = IMG_Load("assets/images/mechantL.png");
-        ennemis[i].textureL = SDL_CreateTextureFromSurface(renderer, mechant_left);
-        SDL_FreeSurface(mechant_left);
+        if (i % 5 == 0) {
+            ennemis[i].type = 1;
+            ennemis[i].textureR = tTank;
+            ennemis[i].textureL = tTank;
+        }
+        else {
+            ennemis[i].type = 0;
+            ennemis[i].textureR = tNormal;
+            ennemis[i].textureL = tNormal;
+        }
     }
 }
+
 
 void init_weapon_assets(SDL_Renderer* renderer, Char* arme, Char* player) {
     arme->x = player->x + 50;

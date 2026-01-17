@@ -117,9 +117,9 @@ int main(int argc, char* argv[]) {
         printf("Erreur d'allocation mémoire\n");
         return 1;
     }
-    resetEnnemis(ennemis, config.numEnnemi);
-
     init_enemy_assets(renderer, ennemis, config.numEnnemi);
+
+    resetEnnemis(ennemis, config.numEnnemi);
 
     Char player;
     init_player_assets(renderer, &player);
