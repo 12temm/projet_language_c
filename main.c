@@ -5,7 +5,7 @@
 #include <stdio.h>
 #include <math.h>
 #include <string.h>
-
+#include "settings_menu.h"
 #include "structure.h"
 #include "init_global.h"
 #include "menu.h"
@@ -31,6 +31,9 @@ int main(int argc, char* argv[]) {
     int pickedSword = 0;
     int pickedGun = 0;
     int enemies_killed = 0;
+    int inSettings = 0;
+    int isPaused = 0;
+    int fromPause = 0;
 
     TTF_Init();
     TTF_Font* font = TTF_OpenFont("assets/fonts/Open_Sans/OpenSans-VariableFont_wdth,wght.ttf", 24);
@@ -139,6 +142,7 @@ int main(int argc, char* argv[]) {
     Button menuButton = {{570, 700, 200, 60}, {0, 200, 0, 255}, "menu",1};
     Button scoresButton = {{220, 350, 200, 60}, {0, 0, 200, 255}, "Scores", 1};
     Button scoresDeathButton = {{570, 500, 200, 60}, {0, 0, 200, 255}, "Scores", 1};
+    Button settingsButton = {{220, 450, 200, 60}, {100, 100, 100, 255}, "Options", 1};
 
     SDL_Surface* scoresDeathSurface = TTF_RenderText_Blended(font, scoresDeathButton.label, color);
     SDL_Texture* scoresDeathText = SDL_CreateTextureFromSurface(renderer, scoresDeathSurface);
@@ -165,13 +169,16 @@ int main(int argc, char* argv[]) {
     SDL_Texture* quitText = SDL_CreateTextureFromSurface(renderer, quitSurface);
     SDL_FreeSurface(quitSurface);
 
+    SDL_Surface* settingsSurface = TTF_RenderText_Blended(font, settingsButton.label, color);
+    SDL_Texture* settingsText = SDL_CreateTextureFromSurface(renderer, settingsSurface);
+    SDL_FreeSurface(settingsSurface);
+
     SDL_Rect rect;
 
     int running = 1;
     SDL_Event e;
 
     while (running) {
-
         int mx, my;
         SDL_GetMouseState(&mx, &my);
 
@@ -179,13 +186,89 @@ int main(int argc, char* argv[]) {
 
             if (e.type == SDL_QUIT)
                 running = 0;
+            if (e.type == SDL_KEYDOWN && e.key.keysym.sym == SDLK_ESCAPE) {
+                if (inGame) {
+                    isPaused = !isPaused;
+                }
+            }
 
-            if (e.type == SDL_MOUSEBUTTONDOWN && e.button.button == SDL_BUTTON_LEFT && inGame && pickedGun) {
+            if (e.type == SDL_MOUSEBUTTONDOWN && e.button.button == SDL_BUTTON_LEFT && inGame && pickedGun && !isPaused) {
                 player_shoot_logic(balles, NUM_BALLES, &player, e.button.x, e.button.y, balleTexture);
             }
 
             if (e.type == SDL_MOUSEBUTTONDOWN && e.button.button == SDL_BUTTON_LEFT) {
+                if (inGame && isPaused) {
+                    int bw = 200;
+                    int bh = 50;
+                    int bx = w_window / 2 - bw / 2;
+                    int by = h_window / 2 - 100;
 
+                    SDL_Rect btnResume   = {bx, by, bw, bh};
+                    SDL_Rect btnSettings = {bx, by + 60, bw, bh};
+                    SDL_Rect btnScores   = {bx, by + 120, bw, bh};
+                    SDL_Rect btnQuit     = {bx, by + 180, bw, bh};
+
+                    if (isMouseInside(btnResume, mx, my)) {
+                        isPaused = 0;
+                    }
+                    else if (isMouseInside(btnSettings, mx, my)) {
+                        fromPause = 1;
+                        isPaused = 0;
+                        inGame = 0;
+                        inMenu = 0;
+                        inSettings = 1;
+                    }
+                    else if (isMouseInside(btnScores, mx, my)) {
+                        show_leaderboard_loop(window, renderer, font);
+                    }
+                    else if (isMouseInside(btnQuit, mx, my)) {
+                        isPaused = 0;
+                        inGame = 0;
+                        inMenu = 1;
+                        Mix_HaltMusic();
+                        Mix_PlayMusic(musicMenu, -1);
+                        resetEnnemis(ennemis, config.numEnnemi);
+                        player.x = 300; player.y = 300; player.health = player.maxHealth;
+                    }
+                    continue;
+                }
+                if (inMenu && isMouseInside(settingsButton.rect, mx, my)) {
+                    fromPause = 0;
+                    inMenu = 0;
+                    inSettings = 1;
+                }
+
+                else if (inSettings) {
+                    SDL_Rect btnMinus = {220, 200, 60, 60}; 
+                    SDL_Rect btnPlus  = {460, 200, 60, 60};
+                    SDL_Rect btnBack  = {220, 400, 300, 60};
+
+                    if (isMouseInside(btnMinus, mx, my)) {
+                        int v = Mix_VolumeMusic(-1) - 16;
+                        if (v < 0) v = 0;
+                        Mix_VolumeMusic(v);
+                        Mix_Volume(-1, v);
+                    }
+                    else if (isMouseInside(btnPlus, mx, my)) {
+                        int v = Mix_VolumeMusic(-1) + 16;
+                        if (v > 128) v = 128;
+                        Mix_VolumeMusic(v);
+                        Mix_Volume(-1, v);
+                    }
+                    else if (isMouseInside(btnBack, mx, my)) {
+                        inSettings = 0;
+
+                        if (fromPause == 1) {
+
+                            inGame = 1;
+                            isPaused = 1;
+                            fromPause = 0;
+                        } else {
+
+                            inMenu = 1;
+                        }
+                    }
+                }
                 Button swordButton ={{100, 100, 200, 200}, {0, 200, 0, 255}, "Sword",1};
                 Button gunButton ={{300, 100, 200, 200}, {0, 200, 0, 255}, "Gun",1};
 
@@ -221,44 +304,40 @@ int main(int argc, char* argv[]) {
                     int ret = show_leaderboard_loop(window, renderer, font);
                     if (ret == 0) running = 0;
                 }
+                else if (isMouseInside(settingsButton.rect, mx, my) && inMenu) {
+                    inMenu = 0;
+                    inSettings = 1;
+                }
 
                 else if ((isMouseInside(menuButton.rect, mx, my))&& (inDeathMenu)){
-
                     inDeathMenu = 0;
                     inMenu = 1;
                     playButton.visible = 1;
                     quitButton.visible = 1;
-
                     player.health = player.maxHealth;
                     player.x = 300;
                     player.y = 300;
                     player.vx = 0;
                     player.vy = 0;
                     player.invincible = 0;
-
                     resetEnnemis(ennemis, config.numEnnemi);
-
                     Mix_HaltMusic();
                     Mix_PlayMusic(musicGame, -1);
                 }
 
                 else if ((isMouseInside(replayButton.rect, mx, my))&& (inDeathMenu)){
-
-                        inDeathMenu = 0;
-                        inGame = 1;
-
-                        player.health = player.maxHealth;
-                        player.x = 300;
-                        player.y = 300;
-                        player.vx = 0;
-                        player.vy = 0;
-                        player.invincible = 0;
-
-                        resetEnnemis(ennemis, config.numEnnemi);
-
-                        Mix_HaltMusic();
-                        Mix_PlayMusic(musicGame, -1);
-                    }
+                    inDeathMenu = 0;
+                    inGame = 1;
+                    player.health = player.maxHealth;
+                    player.x = 300;
+                    player.y = 300;
+                    player.vx = 0;
+                    player.vy = 0;
+                    player.invincible = 0;
+                    resetEnnemis(ennemis, config.numEnnemi);
+                    Mix_HaltMusic();
+                    Mix_PlayMusic(musicGame, -1);
+                }
                 else if (isMouseInside(scoresDeathButton.rect, mx, my) && inDeathMenu) {
                     show_leaderboard_loop(window, renderer, font);
                 }
@@ -268,12 +347,9 @@ int main(int argc, char* argv[]) {
                         inMenu = 1;
                         playButton.visible = 1;
                         quitButton.visible = 1;
-
                         player.health = player.maxHealth;
                         enemies_killed = 0;
-
                         resetEnnemis(ennemis, config.numEnnemi);
-
                         for (int k = 0; k < config.numEnnemi; k++) {
                             ennemis[k].dead = 0;
                             SDL_Surface* tmpR = IMG_Load("assets/images/mechantR.png");
@@ -283,56 +359,44 @@ int main(int argc, char* argv[]) {
                             ennemis[k].textureL = SDL_CreateTextureFromSurface(renderer, tmpL);
                             SDL_FreeSurface(tmpL);
                         }
-
                         for (int k = 0; k < NUM_BALLES; k++) balles[k].active = 0;
-
                         Mix_HaltMusic();
                         Mix_PlayMusic(musicMenu, -1);
                     }
-
-                   else if ((isMouseInside(replayButton.rect, mx, my)) && (inWinMenu)) {
-
+                    else if ((isMouseInside(replayButton.rect, mx, my)) && (inWinMenu)) {
                         inWinMenu = 0;
                         inGame = 1;
-
                         player.health = player.maxHealth;
                         player.x = 300;
                         player.y = 300;
                         player.vx = 0;
                         player.vy = 0;
                         player.invincible = 0;
-
                         enemies_killed = 0;
-
                         resetEnnemis(ennemis, config.numEnnemi);
-
                         for (int k = 0; k < config.numEnnemi; k++) {
                             ennemis[k].dead = 0;
-
                             SDL_Surface* tmpR = IMG_Load("assets/images/mechantR.png");
                             ennemis[k].textureR = SDL_CreateTextureFromSurface(renderer, tmpR);
                             SDL_FreeSurface(tmpR);
-
                             SDL_Surface* tmpL = IMG_Load("assets/images/mechantL.png");
                             ennemis[k].textureL = SDL_CreateTextureFromSurface(renderer, tmpL);
                             SDL_FreeSurface(tmpL);
                         }
-
                         for (int k = 0; k < NUM_BALLES; k++) {
                             balles[k].active = 0;
                         }
-
                         Mix_HaltMusic();
                         Mix_PlayMusic(musicGame, -1);
-                   }
-                   else if ((isMouseInside(scoresDeathButton.rect, mx, my)) && (inWinMenu)) {
-                       show_leaderboard_loop(window, renderer, font);
-                   }
+                    }
+                    else if ((isMouseInside(scoresDeathButton.rect, mx, my)) && (inWinMenu)) {
+                        show_leaderboard_loop(window, renderer, font);
+                    }
                 }
             }
         }
 
-        if (inGame) {
+        if (inGame && !isPaused) {
             if (player.moving) {
                 Uint32 now = SDL_GetTicks();
                 if (now - player.lastFrameTime > player.frameDelay) {
@@ -361,19 +425,87 @@ int main(int argc, char* argv[]) {
                 Mix_HaltMusic();
             }
 
+            if (player.health <= 0) {
+                Mix_HaltMusic();
+                Mix_PlayMusic(musicDeath, -1);
+                update_high_score("Player", enemies_killed);
+                inDeathMenu = 1;
+                inGame = 0;
+            }
+        }
+
+        if (inGame) {
             render_game_scene(renderer, &player, ennemis, &arme, config.numEnnemi,
                               balles, NUM_BALLES,
                               texture_background, texture_object_background,
                               pickedSword, config.attckSpeed, font, enemies_killed);
 
-            if (player.health <= 0) {
-                Mix_HaltMusic();
-                Mix_PlayMusic(musicDeath, -1);
+            if (isPaused) {
+                SDL_SetRenderDrawBlendMode(renderer, SDL_BLENDMODE_BLEND);
+                SDL_SetRenderDrawColor(renderer, 0, 0, 0, 150);
+                SDL_Rect overlay = {0, 0, w_window, h_window};
+                SDL_RenderFillRect(renderer, &overlay);
+                SDL_SetRenderDrawBlendMode(renderer, SDL_BLENDMODE_NONE);
 
-                update_high_score("Player", enemies_killed);
+                int bw = 200;
+                int bh = 50;
+                int bx = w_window / 2 - bw / 2;
+                int by = h_window / 2 - 100;
 
-                inDeathMenu = 1;
-                inGame = 0;
+                SDL_Rect btnResume   = {bx, by, bw, bh};
+                SDL_Rect btnSettings = {bx, by + 60, bw, bh};
+                SDL_Rect btnScores   = {bx, by + 120, bw, bh};
+                SDL_Rect btnQuit     = {bx, by + 180, bw, bh};
+
+                SDL_Color white = {255, 255, 255, 255};
+
+                if (isMouseInside(btnResume, mx, my)) SDL_SetRenderDrawColor(renderer, 0, 255, 0, 255);
+                else SDL_SetRenderDrawColor(renderer, 0, 200, 0, 255);
+                SDL_RenderFillRect(renderer, &btnResume);
+
+                SDL_Surface* sResume = TTF_RenderText_Blended(font, "Reprendre", white);
+                SDL_Texture* tResume = SDL_CreateTextureFromSurface(renderer, sResume);
+                SDL_Rect rResume = {0, 0, sResume->w, sResume->h};
+                rResume.x = btnResume.x + (btnResume.w - rResume.w) / 2;
+                rResume.y = btnResume.y + (btnResume.h - rResume.h) / 2;
+                SDL_RenderCopy(renderer, tResume, NULL, &rResume);
+                SDL_FreeSurface(sResume); SDL_DestroyTexture(tResume);
+
+                if (isMouseInside(btnSettings, mx, my)) SDL_SetRenderDrawColor(renderer, 150, 150, 150, 255);
+                else SDL_SetRenderDrawColor(renderer, 100, 100, 100, 255);
+                SDL_RenderFillRect(renderer, &btnSettings);
+
+                SDL_Surface* sSet = TTF_RenderText_Blended(font, "Parametres", white);
+                SDL_Texture* tSet = SDL_CreateTextureFromSurface(renderer, sSet);
+                SDL_Rect rSet = {0, 0, sSet->w, sSet->h};
+                rSet.x = btnSettings.x + (btnSettings.w - rSet.w) / 2;
+                rSet.y = btnSettings.y + (btnSettings.h - rSet.h) / 2;
+                SDL_RenderCopy(renderer, tSet, NULL, &rSet);
+                SDL_FreeSurface(sSet); SDL_DestroyTexture(tSet);
+
+                if (isMouseInside(btnScores, mx, my)) SDL_SetRenderDrawColor(renderer, 50, 50, 255, 255);
+                else SDL_SetRenderDrawColor(renderer, 0, 0, 200, 255);
+                SDL_RenderFillRect(renderer, &btnScores);
+
+                SDL_Surface* sScore = TTF_RenderText_Blended(font, "Scores", white);
+                SDL_Texture* tScore = SDL_CreateTextureFromSurface(renderer, sScore);
+                SDL_Rect rScore = {0, 0, sScore->w, sScore->h};
+                rScore.x = btnScores.x + (btnScores.w - rScore.w) / 2;
+                rScore.y = btnScores.y + (btnScores.h - rScore.h) / 2;
+                SDL_RenderCopy(renderer, tScore, NULL, &rScore);
+                SDL_FreeSurface(sScore); SDL_DestroyTexture(tScore);
+
+                if (isMouseInside(btnQuit, mx, my)) SDL_SetRenderDrawColor(renderer, 255, 0, 0, 255);
+                else SDL_SetRenderDrawColor(renderer, 200, 0, 0, 255);
+                SDL_RenderFillRect(renderer, &btnQuit);
+
+                SDL_Surface* sQuit = TTF_RenderText_Blended(font, "Quitter", white);
+                SDL_Texture* tQuit = SDL_CreateTextureFromSurface(renderer, sQuit);
+                SDL_Rect rQuit = {0, 0, sQuit->w, sQuit->h};
+                rQuit.x = btnQuit.x + (btnQuit.w - rQuit.w) / 2;
+                rQuit.y = btnQuit.y + (btnQuit.h - rQuit.h) / 2;
+                SDL_RenderCopy(renderer, tQuit, NULL, &rQuit);
+                SDL_FreeSurface(sQuit); SDL_DestroyTexture(tQuit);
             }
         }
 
@@ -416,10 +548,26 @@ int main(int argc, char* argv[]) {
             scoresRectText.x = scoresButton.rect.x + (scoresButton.rect.w - scoresRectText.w) / 2;
             scoresRectText.y = scoresButton.rect.y + (scoresButton.rect.h - scoresRectText.h) / 2;
             SDL_RenderCopy(renderer, scoresText, NULL, &scoresRectText);
+
+            if (isMouseInside(settingsButton.rect, mx, my))
+                SDL_SetRenderDrawColor(renderer, 150, 150, 150, 255);
+            else
+                SDL_SetRenderDrawColor(renderer, 100, 100, 100, 255);
+
+            SDL_RenderFillRect(renderer, &settingsButton.rect);
+
+            SDL_Rect settingsRectText = {0, 0, 0, 0};
+            SDL_QueryTexture(settingsText, NULL, NULL, &settingsRectText.w, &settingsRectText.h);
+            settingsRectText.x = settingsButton.rect.x + (settingsButton.rect.w - settingsRectText.w) / 2;
+            settingsRectText.y = settingsButton.rect.y + (settingsButton.rect.h - settingsRectText.h) / 2;
+            SDL_RenderCopy(renderer, settingsText, NULL, &settingsRectText);
         }
 
         if (inMenu2 == 1) {
             choose_weapon(window, font, color, renderer, mx, my);
+        }
+        if (inSettings == 1) {
+            render_settings_menu(renderer, font, mx, my, &inSettings, &inMenu);
         }
 
         if (inDeathMenu == 1) {

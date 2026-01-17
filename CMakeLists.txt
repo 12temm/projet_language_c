@@ -30,6 +30,8 @@ add_executable(MySDLProject main.c
         include.c/cleanup.c
         include.h/draw.h
         include.c/draw.c
+        include.h/settings_menu.h
+        include.c/settings_menu.c
 )
 
 target_include_directories(MySDLProject PRIVATE
