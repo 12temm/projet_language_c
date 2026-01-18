@@ -138,11 +138,6 @@ void render_game_scene(SDL_Renderer* renderer, struct character* player, struct 
             }
         }
     }
-    /*if (pickedSword == 1 && mouseLeftPressed && currentWeaponTexture != NULL) {
-        SDL_Rect fillRect = { arme->rect.x, arme->rect.y,arme->rect.w,arme->rect.h};
-        SDL_SetRenderDrawColor( renderer, 0x00, 0xFF, 0x00, 0xFF );
-        SDL_RenderFillRect( renderer, &fillRect );
-    }*/
 
 
     for (int i = 0; i < numEnnemi; i++) {
