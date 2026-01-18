@@ -362,7 +362,20 @@ int main(int argc, char* argv[]) {
                     player.vx = 0;
                     player.vy = 0;
                     player.invincible = 0;
+                    enemies_killed = 0;
                     resetEnnemis(ennemis, config.numEnnemi);
+                    for (int k = 0; k < config.numEnnemi; k++) {
+                        ennemis[k].dead = 0;
+                        SDL_Surface* tmpR = IMG_Load("assets/images/mechantR.png");
+                        ennemis[k].textureR = SDL_CreateTextureFromSurface(renderer, tmpR);
+                        SDL_FreeSurface(tmpR);
+                        SDL_Surface* tmpL = IMG_Load("assets/images/mechantL.png");
+                        ennemis[k].textureL = SDL_CreateTextureFromSurface(renderer, tmpL);
+                        SDL_FreeSurface(tmpL);
+                    }
+                    for (int k = 0; k < NUM_BALLES; k++) {
+                        balles[k].active = 0;
+                    }
                     Mix_HaltMusic();
                     Mix_PlayMusic(musicGame, -1);
                 }
