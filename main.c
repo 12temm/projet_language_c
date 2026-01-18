@@ -109,8 +109,6 @@ int main(int argc, char* argv[]) {
     SDL_FreeSurface(tempettte_boss);
     texture_background_check(window, renderer, texture, texture_tempettte_boss);
 
-
-
     SDL_Surface* gameoverSurface = IMG_Load("assets/images/game_over.png");
     if (!gameoverSurface) {
         printf("IMG_Load error: %s\n", IMG_GetError());
