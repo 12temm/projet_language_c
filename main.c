@@ -23,6 +23,8 @@
 
 int main(int argc, char* argv[]) {
 
+
+
     int inMenu = 1;
     int inMenu2 = 0;
     int inGame = 0;
@@ -64,6 +66,8 @@ int main(int argc, char* argv[]) {
                                           w_window, h_window,
                                           SDL_WINDOW_SHOWN);
     window_error(window);
+
+
 
     SDL_Color color = { 255, 255, 255 };
 
@@ -650,6 +654,8 @@ int main(int argc, char* argv[]) {
             settingsRectText.x = settingsButton.rect.x + (settingsButton.rect.w - settingsRectText.w) / 2;
             settingsRectText.y = settingsButton.rect.y + (settingsButton.rect.h - settingsRectText.h) / 2;
             SDL_RenderCopy(renderer, settingsText, NULL, &settingsRectText);
+            
+            SDL_SetRenderDrawColor(renderer, 30, 30, 30, 255);
         }
 
         if (inMenu2 == 1) {
