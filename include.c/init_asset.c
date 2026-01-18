@@ -51,17 +51,22 @@ void init_enemy_assets(SDL_Renderer* renderer, Char* ennemis, int numEnnemi) {
     SDL_Texture* tNormal = SDL_CreateTextureFromSurface(renderer, sNormal);
     SDL_FreeSurface(sNormal);
 
-    SDL_Surface* sTank = IMG_Load("assets/images/mechant_tank1R.png");
-    SDL_Texture* tTank = SDL_CreateTextureFromSurface(renderer, sTank);
-    SDL_FreeSurface(sTank);
+    SDL_Surface* sTankR = IMG_Load("assets/images/mechant_tank1R.png");
+    SDL_Texture* tTankR = SDL_CreateTextureFromSurface(renderer, sTankR);
+    SDL_FreeSurface(sTankR);
+
+    SDL_Surface* sTankL = IMG_Load("assets/images/mechant_tank1L.png");
+    SDL_Texture* tTankL = SDL_CreateTextureFromSurface(renderer, sTankL);
+    SDL_FreeSurface(sTankL);
 
     for (int i = 0; i < numEnnemi; i++) {
         ennemis[i].dead = 0;
+        ennemis[i].orientation = 1;
 
         if (i % 5 == 0) {
             ennemis[i].type = 1;
-            ennemis[i].textureR = tTank;
-            ennemis[i].textureL = tTank;
+            ennemis[i].textureR = tTankR;
+            ennemis[i].textureL = tTankL;
         }
         else {
             ennemis[i].type = 0;

@@ -148,6 +148,24 @@ int main(int argc, char* argv[]) {
     init_enemy_assets(renderer, ennemis, config.numEnnemi);
 
     resetEnnemis(ennemis, config.numEnnemi);
+    for (int k = 0; k < config.numEnnemi; k++) {
+        ennemis[k].dead = 0;
+        if (ennemis[k].type == 1) {
+            SDL_Surface* tmpTankR = IMG_Load("assets/images/mechant_tank1R.png");
+            ennemis[k].textureR = SDL_CreateTextureFromSurface(renderer, tmpTankR);
+            SDL_FreeSurface(tmpTankR);
+            SDL_Surface* tmpTankL = IMG_Load("assets/images/mechant_tank1L.png");
+            ennemis[k].textureL = SDL_CreateTextureFromSurface(renderer, tmpTankL);
+            SDL_FreeSurface(tmpTankL);
+        } else {
+            SDL_Surface* tmpR = IMG_Load("assets/images/mechantR.png");
+            ennemis[k].textureR = SDL_CreateTextureFromSurface(renderer, tmpR);
+            SDL_FreeSurface(tmpR);
+            SDL_Surface* tmpL = IMG_Load("assets/images/mechantL.png");
+            ennemis[k].textureL = SDL_CreateTextureFromSurface(renderer, tmpL);
+            SDL_FreeSurface(tmpL);
+        }
+    }
 
     Char player;
     init_player_assets(renderer, &player);
@@ -366,12 +384,21 @@ int main(int argc, char* argv[]) {
                     resetEnnemis(ennemis, config.numEnnemi);
                     for (int k = 0; k < config.numEnnemi; k++) {
                         ennemis[k].dead = 0;
-                        SDL_Surface* tmpR = IMG_Load("assets/images/mechantR.png");
-                        ennemis[k].textureR = SDL_CreateTextureFromSurface(renderer, tmpR);
-                        SDL_FreeSurface(tmpR);
-                        SDL_Surface* tmpL = IMG_Load("assets/images/mechantL.png");
-                        ennemis[k].textureL = SDL_CreateTextureFromSurface(renderer, tmpL);
-                        SDL_FreeSurface(tmpL);
+                        if (ennemis[k].type == 1) {
+                            SDL_Surface* tmpTankR = IMG_Load("assets/images/mechant_tank1R.png");
+                            ennemis[k].textureR = SDL_CreateTextureFromSurface(renderer, tmpTankR);
+                            SDL_FreeSurface(tmpTankR);
+                            SDL_Surface* tmpTankL = IMG_Load("assets/images/mechant_tank1L.png");
+                            ennemis[k].textureL = SDL_CreateTextureFromSurface(renderer, tmpTankL);
+                            SDL_FreeSurface(tmpTankL);
+                        } else {
+                            SDL_Surface* tmpR = IMG_Load("assets/images/mechantR.png");
+                            ennemis[k].textureR = SDL_CreateTextureFromSurface(renderer, tmpR);
+                            SDL_FreeSurface(tmpR);
+                            SDL_Surface* tmpL = IMG_Load("assets/images/mechantL.png");
+                            ennemis[k].textureL = SDL_CreateTextureFromSurface(renderer, tmpL);
+                            SDL_FreeSurface(tmpL);
+                        }
                     }
                     for (int k = 0; k < NUM_BALLES; k++) {
                         balles[k].active = 0;
@@ -393,12 +420,21 @@ int main(int argc, char* argv[]) {
                         resetEnnemis(ennemis, config.numEnnemi);
                         for (int k = 0; k < config.numEnnemi; k++) {
                             ennemis[k].dead = 0;
-                            SDL_Surface* tmpR = IMG_Load("assets/images/mechantR.png");
-                            ennemis[k].textureR = SDL_CreateTextureFromSurface(renderer, tmpR);
-                            SDL_FreeSurface(tmpR);
-                            SDL_Surface* tmpL = IMG_Load("assets/images/mechantL.png");
-                            ennemis[k].textureL = SDL_CreateTextureFromSurface(renderer, tmpL);
-                            SDL_FreeSurface(tmpL);
+                            if (ennemis[k].type == 1) {
+                                SDL_Surface* tmpTankR = IMG_Load("assets/images/mechant_tank1R.png");
+                                ennemis[k].textureR = SDL_CreateTextureFromSurface(renderer, tmpTankR);
+                                SDL_FreeSurface(tmpTankR);
+                                SDL_Surface* tmpTankL = IMG_Load("assets/images/mechant_tank1L.png");
+                                ennemis[k].textureL = SDL_CreateTextureFromSurface(renderer, tmpTankL);
+                                SDL_FreeSurface(tmpTankL);
+                            } else {
+                                SDL_Surface* tmpR = IMG_Load("assets/images/mechantR.png");
+                                ennemis[k].textureR = SDL_CreateTextureFromSurface(renderer, tmpR);
+                                SDL_FreeSurface(tmpR);
+                                SDL_Surface* tmpL = IMG_Load("assets/images/mechantL.png");
+                                ennemis[k].textureL = SDL_CreateTextureFromSurface(renderer, tmpL);
+                                SDL_FreeSurface(tmpL);
+                            }
                         }
                         for (int k = 0; k < NUM_BALLES; k++) balles[k].active = 0;
                         Mix_HaltMusic();
@@ -417,12 +453,21 @@ int main(int argc, char* argv[]) {
                         resetEnnemis(ennemis, config.numEnnemi);
                         for (int k = 0; k < config.numEnnemi; k++) {
                             ennemis[k].dead = 0;
-                            SDL_Surface* tmpR = IMG_Load("assets/images/mechantR.png");
-                            ennemis[k].textureR = SDL_CreateTextureFromSurface(renderer, tmpR);
-                            SDL_FreeSurface(tmpR);
-                            SDL_Surface* tmpL = IMG_Load("assets/images/mechantL.png");
-                            ennemis[k].textureL = SDL_CreateTextureFromSurface(renderer, tmpL);
-                            SDL_FreeSurface(tmpL);
+                            if (ennemis[k].type == 1) {
+                                SDL_Surface* tmpTankR = IMG_Load("assets/images/mechant_tank1R.png");
+                                ennemis[k].textureR = SDL_CreateTextureFromSurface(renderer, tmpTankR);
+                                SDL_FreeSurface(tmpTankR);
+                                SDL_Surface* tmpTankL = IMG_Load("assets/images/mechant_tank1L.png");
+                                ennemis[k].textureL = SDL_CreateTextureFromSurface(renderer, tmpTankL);
+                                SDL_FreeSurface(tmpTankL);
+                            } else {
+                                SDL_Surface* tmpR = IMG_Load("assets/images/mechantR.png");
+                                ennemis[k].textureR = SDL_CreateTextureFromSurface(renderer, tmpR);
+                                SDL_FreeSurface(tmpR);
+                                SDL_Surface* tmpL = IMG_Load("assets/images/mechantL.png");
+                                ennemis[k].textureL = SDL_CreateTextureFromSurface(renderer, tmpL);
+                                SDL_FreeSurface(tmpL);
+                            }
                         }
                         for (int k = 0; k < NUM_BALLES; k++) {
                             balles[k].active = 0;
