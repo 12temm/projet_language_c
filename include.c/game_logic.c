@@ -71,6 +71,9 @@ void update_enemies_logic(Char *ennemis, int numEnnemi, Char *player) {
             ennemis[i].y += ennemis[i].vy;
             ennemis[i].rect.x = (int)ennemis[i].x;
             ennemis[i].rect.y = (int)ennemis[i].y;
+        }else {
+            ennemis[i].vx = 0;
+            ennemis[i].vy = 0;
         }
     }
     if (player->invincible && (now - player->invincibleStart >= player->invincibleTime)) {
@@ -145,6 +148,8 @@ int check_collisions_logic(Char *ennemis, int numEnnemi, Proj *balles, int numBa
                         ennemis[i].x = 1000;
                         ennemis[i].y = 1000;
                         ennemis[i].dead = 1;
+                        ennemis[i].vx = 0;
+                        ennemis[i].vy = 0;
                         kills++;
                     }
                 }

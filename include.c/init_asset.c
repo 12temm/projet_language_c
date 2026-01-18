@@ -51,7 +51,7 @@ void init_enemy_assets(SDL_Renderer* renderer, Char* ennemis, int numEnnemi) {
     SDL_Texture* tNormal = SDL_CreateTextureFromSurface(renderer, sNormal);
     SDL_FreeSurface(sNormal);
 
-    SDL_Surface* sTank = IMG_Load("assets/images/mechant_tank.png");
+    SDL_Surface* sTank = IMG_Load("assets/images/mechant_tank1R.png");
     SDL_Texture* tTank = SDL_CreateTextureFromSurface(renderer, sTank);
     SDL_FreeSurface(sTank);
 

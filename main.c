@@ -42,6 +42,8 @@ int main(int argc, char* argv[]) {
 
     Mix_Music* musicGame = Mix_LoadMUS("assets/sounds/game_music.mp3");
     Mix_Music* musicMenu = Mix_LoadMUS("assets/sounds/menu_music.mp3");
+    Mix_Music* musicVictory = Mix_LoadMUS("assets/sounds/victory_music.mp3");
+
     if (!musicMenu) {
         printf("Mix_LoadMUS Error: %s\n", Mix_GetError());
         Mix_CloseAudio();
@@ -449,6 +451,7 @@ int main(int argc, char* argv[]) {
                 inWinMenu = 1;
                 update_high_score("Player", enemies_killed);
                 Mix_HaltMusic();
+                Mix_PlayMusic(musicVictory, -1);
             }
 
             if (player.health <= 0) {
