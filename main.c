@@ -103,6 +103,12 @@ int main(int argc, char* argv[]) {
     SDL_FreeSurface(projectil_boss_horizontal);
     texture_background_check(window, renderer, texture, texture_projectil_boss_horizontal);
 
+    SDL_Surface* tempettte_boss = IMG_Load("assets/images/tempettte_boss.png");
+    surface_background_check(window, renderer, texture, tempettte_boss);
+    SDL_Texture *texture_tempettte_boss= SDL_CreateTextureFromSurface(renderer, tempettte_boss);
+    SDL_FreeSurface(tempettte_boss);
+    texture_background_check(window, renderer, texture, texture_tempettte_boss);
+
 
 
     SDL_Surface* gameoverSurface = IMG_Load("assets/images/game_over.png");
