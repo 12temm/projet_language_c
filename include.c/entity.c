@@ -11,7 +11,7 @@ void resetEnnemis(Char ennemis[], int count) {
     for (int i = 0; i < count; i++) {
         ennemis[i].moving = 0;
         ennemis[i].vx = 0;
-        ennemis[i].vy = 0;
+        ennemis[i].vy  = 0;
         switch (ennemis[i].type) {
             case 1:
                 ennemis[i].health = 3;

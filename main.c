@@ -55,7 +55,7 @@ int main(int argc, char* argv[]) {
     int w_window= config.windowWidth;
     int h_window= config.windowHeight;
 
-    SDL_Window* window = SDL_CreateWindow("quoicoubeh",
+    SDL_Window* window = SDL_CreateWindow("Super Pixel Survivor",
                                           SDL_WINDOWPOS_CENTERED,
                                           SDL_WINDOWPOS_CENTERED,
                                           w_window, h_window,
