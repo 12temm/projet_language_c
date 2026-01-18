@@ -59,6 +59,9 @@ int main(int argc, char* argv[]) {
 
     int w_window= config.windowWidth;
     int h_window= config.windowHeight;
+    
+    Uint32 lastShotTime = 0;
+    int gunCooldown = 1000 / config.attckSpeed;
 
     SDL_Window* window = SDL_CreateWindow("Super Pixel Survivor",
                                           SDL_WINDOWPOS_CENTERED,
@@ -243,7 +246,11 @@ int main(int argc, char* argv[]) {
             }
 
             if (e.type == SDL_MOUSEBUTTONDOWN && e.button.button == SDL_BUTTON_LEFT && inGame && pickedGun && !isPaused) {
-                player_shoot_logic(balles, NUM_BALLES, &player, e.button.x, e.button.y, balleTexture);
+                Uint32 currentTime = SDL_GetTicks();
+                if (currentTime - lastShotTime >= gunCooldown) {
+                    player_shoot_logic(balles, NUM_BALLES, &player, e.button.x, e.button.y, balleTexture);
+                    lastShotTime = currentTime;
+                }
             }
 
             if (e.type == SDL_MOUSEBUTTONDOWN && e.button.button == SDL_BUTTON_LEFT) {
@@ -338,6 +345,7 @@ int main(int argc, char* argv[]) {
                     inGame = 1;
                     pickedSword = 1;
                     pickedGun = 0;
+                    lastShotTime = 0;
                 }
 
                 else if (inMenu2 && isMouseInside(gunButton.rect, mx, my)) {
@@ -345,6 +353,7 @@ int main(int argc, char* argv[]) {
                     inGame = 1;
                     pickedSword = 0;
                     pickedGun = 1;
+                    lastShotTime = 0;
                 }
 
                 else if ((isMouseInside(quitButton.rect, mx, my))&& (inMenu)) {
@@ -385,6 +394,7 @@ int main(int argc, char* argv[]) {
                     player.vy = 0;
                     player.invincible = 0;
                     enemies_killed = 0;
+                    lastShotTime = 0;
                     resetEnnemis(ennemis, config.numEnnemi);
                     for (int k = 0; k < config.numEnnemi; k++) {
                         ennemis[k].dead = 0;
@@ -454,6 +464,7 @@ int main(int argc, char* argv[]) {
                         player.vy = 0;
                         player.invincible = 0;
                         enemies_killed = 0;
+                        lastShotTime = 0;
                         resetEnnemis(ennemis, config.numEnnemi);
                         for (int k = 0; k < config.numEnnemi; k++) {
                             ennemis[k].dead = 0;
