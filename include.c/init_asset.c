@@ -78,7 +78,20 @@ void init_weapon_assets(SDL_Renderer* renderer, Char* arme, Char* player) {
     arme->rect.w = player->rect.w;
     arme->rect.h = player->rect.h;
 
-    SDL_Surface* armeS = IMG_Load("assets/images/spr_wep_brnz_sword_1.png");
-    arme->normal_texture = SDL_CreateTextureFromSurface(renderer, armeS);
-    SDL_FreeSurface(armeS);
+    SDL_Surface* arme_left = IMG_Load("assets/images/epee_left.png");
+    arme->textureL = SDL_CreateTextureFromSurface(renderer, arme_left);
+    SDL_FreeSurface(arme_left);
+
+    SDL_Surface* arme_right = IMG_Load("assets/images/epee_right.png");
+    arme->textureR = SDL_CreateTextureFromSurface(renderer, arme_right);
+    SDL_FreeSurface(arme_right);
+
+    SDL_Surface* arme_top = IMG_Load("assets/images/epee_top.png");
+    arme->textureL2 = SDL_CreateTextureFromSurface(renderer, arme_top);
+    SDL_FreeSurface(arme_top);
+
+    SDL_Surface* arme_bot = IMG_Load("assets/images/epee_bot.png");
+    arme->textureR2 = SDL_CreateTextureFromSurface(renderer, arme_bot);
+    SDL_FreeSurface(arme_bot);
+
 }

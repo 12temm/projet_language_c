@@ -16,110 +16,134 @@ void render_game_scene(SDL_Renderer* renderer, struct character* player, struct 
 
     show_background(NULL, renderer, NULL, texBg, rect);
 
-    int mouseX, mouseY;
-    SDL_GetMouseState(&mouseX, &mouseY);
-
-    SDL_Point center;
+    /*SDL_Point center;
     center.x = -30;
     center.y = 0;
 
-    double angle = atan2(mouseY - player->y, mouseX - player->x);
-    double angleDeg = angle * 180.0 / M_PI;
-
-    SDL_Rect armeRect;
-    armeRect.x = (int)player->x + 30;
-    armeRect.y = (int)player->y;
-    armeRect.w = player->rect.w + 10;
-    armeRect.h = player->rect.h;
-
-    SDL_Point rotatedPoints[4];
-    SDL_Point centerAbs = {armeRect.x + center.x, armeRect.y + center.y};
-    SDL_Point originalPoints[4] = {
-        {armeRect.x, armeRect.y},
-        {armeRect.x + armeRect.w, armeRect.y},
-        {armeRect.x + armeRect.w, armeRect.y + armeRect.h},
-        {armeRect.x, armeRect.y + armeRect.h}
-    };
-    for (int i = 0; i < 4; i++) {
-        double translatedX = originalPoints[i].x - centerAbs.x;
-        double translatedY = originalPoints[i].y - centerAbs.y;
-        rotatedPoints[i].x = (int)(translatedX * cos(angle) - translatedY * sin(angle) + centerAbs.x);
-        rotatedPoints[i].y = (int)(translatedX * sin(angle) + translatedY * cos(angle) + centerAbs.y);
-    }
-
-    /*Uint32 now = SDL_GetTicks() / attackSpeed;
+    Uint32 now = SDL_GetTicks() / attackSpeed;
     SDL_Rect armeRect;
     armeRect.x = (int)player->x+30;
     armeRect.y = (int)player->y;
     armeRect.w = player->rect.w+10;
     armeRect.h = player->rect.h;
+
+    arme->rect.x = player->rect.x;
+    arme->rect.y = player->rect.y;
+    arme->rect.w = player->rect.w;
+    arme->rect.h = player->rect.h;
+
+
     */
 
-    /*SDL_Point rotatedPoints[4];
-    double angle = now * M_PI / 180.0;
-    SDL_Point centerAbs = {armeRect.x + center.x, armeRect.y + center.y};
-    */
+    SDL_Point center;
+    center.x = -10;
+    center.y = 0;
 
-    /*SDL_Point originalPoints[4] = {
-        {armeRect.x, armeRect.y},
-        {armeRect.x + armeRect.w, armeRect.y},
-        {armeRect.x + armeRect.w, armeRect.y + armeRect.h},
-        {armeRect.x, armeRect.y + armeRect.h}
-    };
+    int mouseX, mouseY;
+    Uint32 mouseState = SDL_GetMouseState(&mouseX, &mouseY);
+    int mouseLeftPressed = (mouseState & SDL_BUTTON(SDL_BUTTON_LEFT));
 
-    for (int i = 0; i < 4; i++) {
-        double translatedX = originalPoints[i].x - centerAbs.x;
-        double translatedY = originalPoints[i].y - centerAbs.y;
-        rotatedPoints[i].x = (int)(translatedX * cos(angle) - translatedY * sin(angle) + centerAbs.x);
-        rotatedPoints[i].y = (int)(translatedX * sin(angle) + translatedY * cos(angle) + centerAbs.y);
+    int dx = mouseX - (player->x + player->rect.w/2);
+    int dy = mouseY - (player->y + player->rect.h/2);
+
+    SDL_Rect armeRect;
+    armeRect.w = player->rect.w + 20;
+    armeRect.h = player->rect.h + 10;
+
+    SDL_Texture* currentWeaponTexture = NULL;
+
+    if (pickedSword == 1 && mouseLeftPressed) {
+        if (abs(dx) > abs(dy)) {
+            if (dx > 0) {
+                currentWeaponTexture = arme->textureR;
+                armeRect.x = (int)player->x + player->rect.w-5;
+                armeRect.y = (int)player->y+ player->rect.h/2 -armeRect.h/2 +10;
+                armeRect.w = 30;
+                armeRect.h = 20;
+            } else {
+                currentWeaponTexture = arme->textureL;
+                armeRect.x = (int)player->x - 25;
+                armeRect.y = (int)player->y + player->rect.h/2 - armeRect.h/2 +10;
+                armeRect.w = 30;
+                armeRect.h = 20;
+            }
+        } else {
+            if (dy > 0) {
+                currentWeaponTexture = arme->textureR2;
+                armeRect.x = (int)player->x + player->rect.w/2 - armeRect.w/2;
+                armeRect.y = (int)player->y + player->rect.h -10;
+                armeRect.w = 20;
+                armeRect.h = 30;
+            } else {
+                currentWeaponTexture = arme->textureL2;
+                armeRect.x = (int)player->x - player->rect.w/2 + armeRect.w/2;
+                armeRect.y = (int)player->y - 10;
+                armeRect.w = 20;
+                armeRect.h = 30;
+            }
+        }
     }
-    */
+
+    arme->rect.x = armeRect.x;
+    arme->rect.y = armeRect.y;
+    arme->rect.w = armeRect.w;
+    arme->rect.h = armeRect.h;
 
 
+    arme->type = 0;
 
     if (player->orientation == 1) {
         if (player->currentFrame == 0) {
             SDL_RenderCopy(renderer, player->textureR, NULL, &player->rect);
-            if (pickedSword == 1) {
-                SDL_RenderCopyEx(renderer, arme->normal_texture, NULL, &armeRect, angleDeg, &center, SDL_FLIP_NONE);
+            if (pickedSword == 1 && mouseLeftPressed && currentWeaponTexture != NULL) {
+                SDL_RenderCopy(renderer, currentWeaponTexture, NULL, &armeRect);
+                arme->type = 1;
+                arme->type = 1;
             }
         }
         else if (player->currentFrame == 1) {
             SDL_RenderCopy(renderer, player->textureR2, NULL, &player->rect);
-            if (pickedSword == 1) {
-                SDL_RenderCopyEx(renderer, arme->normal_texture, NULL, &armeRect, angleDeg, &center, SDL_FLIP_NONE);
+            if (pickedSword == 1 && mouseLeftPressed && currentWeaponTexture != NULL) {
+                SDL_RenderCopy(renderer, currentWeaponTexture, NULL, &armeRect);
+                arme->type = 1;
             }
         }
         else {
             SDL_RenderCopy(renderer, player->textureR3, NULL, &player->rect);
-            if (pickedSword == 1) {
-                SDL_RenderCopyEx(renderer, arme->normal_texture, NULL, &armeRect, angleDeg, &center, SDL_FLIP_NONE);
+            if (pickedSword == 1 && mouseLeftPressed && currentWeaponTexture != NULL) {
+                SDL_RenderCopy(renderer, currentWeaponTexture, NULL, &armeRect);
+                arme->type = 1;
             }
         }
     } else {
         if (player->currentFrame == 0) {
             SDL_RenderCopy(renderer, player->textureL, NULL, &player->rect);
-            if (pickedSword == 1) {
-                SDL_RenderCopyEx(renderer, arme->normal_texture, NULL, &armeRect, angleDeg, &center, SDL_FLIP_NONE);
+            if (pickedSword == 1 && mouseLeftPressed && currentWeaponTexture != NULL) {
+                SDL_RenderCopy(renderer, currentWeaponTexture, NULL, &armeRect);
+                arme->type = 1;
             }
         }
         else if (player->currentFrame == 1) {
             SDL_RenderCopy(renderer, player->textureL2, NULL, &player->rect);
-            if (pickedSword == 1) {
-                SDL_RenderCopyEx(renderer, arme->normal_texture, NULL, &armeRect, angleDeg, &center, SDL_FLIP_NONE);
+            if (pickedSword == 1 && mouseLeftPressed && currentWeaponTexture != NULL) {
+                SDL_RenderCopy(renderer, currentWeaponTexture, NULL, &armeRect);
+                arme->type = 1;
             }
         }
         else {
             SDL_RenderCopy(renderer, player->textureL3, NULL, &player->rect);
-            if (pickedSword == 1) {
-                SDL_RenderCopyEx(renderer, arme->normal_texture, NULL, &armeRect, angleDeg, &center, SDL_FLIP_NONE);
+            if (pickedSword == 1 && mouseLeftPressed && currentWeaponTexture != NULL) {
+                SDL_RenderCopy(renderer, currentWeaponTexture, NULL, &armeRect);
+                arme->type = 1;
             }
         }
     }
+    /*if (pickedSword == 1 && mouseLeftPressed && currentWeaponTexture != NULL) {
+        SDL_Rect fillRect = { arme->rect.x, arme->rect.y,arme->rect.w,arme->rect.h};
+        SDL_SetRenderDrawColor( renderer, 0x00, 0xFF, 0x00, 0xFF );
+        SDL_RenderFillRect( renderer, &fillRect );
+    }*/
 
-    SDL_Rect fillRect = { armeRect.x, armeRect.y, armeRect.w, armeRect.h };
-    SDL_SetRenderDrawColor( renderer, 0x00, 0xFF, 0x00, 0xFF );
-    SDL_RenderFillRect( renderer, &fillRect );
 
     for (int i = 0; i < numEnnemi; i++) {
         if (ennemis[i].orientation == 1 && !ennemis[i].dead)

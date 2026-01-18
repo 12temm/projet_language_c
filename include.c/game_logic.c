@@ -130,15 +130,12 @@ int check_collisions_logic(Char *ennemis, int numEnnemi, Proj *balles, int numBa
     int kills = 0;
 
     if (pickedSword) {
-        arme->rect.x = (int)player->x;
-        arme->rect.y = (int)player->y;
-
         for (int i = 0; i < numEnnemi; i++) {
             if (!ennemis[i].dead) {
                 SDL_Rect rArme = {arme->rect.x, arme->rect.y, arme->rect.w, arme->rect.h};
                 SDL_Rect rEnnemi = {ennemis[i].rect.x, ennemis[i].rect.y, ennemis[i].rect.w, ennemis[i].rect.h};
 
-                if (SDL_HasIntersection(&rEnnemi, &rArme)) {
+                if (SDL_HasIntersection(&rEnnemi, &rArme) && arme->type == 1) {
 
                     ennemis[i].health -= 1;
                     ennemis[i].x += (ennemis[i].x - player->x) * 0.5f;
