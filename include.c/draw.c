@@ -16,25 +16,6 @@ void render_game_scene(SDL_Renderer* renderer, struct character* player, struct 
 
     show_background(NULL, renderer, NULL, texBg, rect);
 
-    /*SDL_Point center;
-    center.x = -30;
-    center.y = 0;
-
-    Uint32 now = SDL_GetTicks() / attackSpeed;
-    SDL_Rect armeRect;
-    armeRect.x = (int)player->x+30;
-    armeRect.y = (int)player->y;
-    armeRect.w = player->rect.w+10;
-    armeRect.h = player->rect.h;
-
-    arme->rect.x = player->rect.x;
-    arme->rect.y = player->rect.y;
-    arme->rect.w = player->rect.w;
-    arme->rect.h = player->rect.h;
-
-
-    */
-
     SDL_Point center;
     center.x = -10;
     center.y = 0;

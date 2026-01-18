@@ -23,12 +23,6 @@ void loadConfig(char *filename, Config *config) {
         *equalSign = '\0';
         char *key = line;
         char *value = equalSign + 1;
-        if (strcmp(key, "WINDOW_HEIGHT") == 0) {
-            config->windowHeight = atoi(value);
-        }
-        if (strcmp(key, "WINDOW_WIDTH") == 0) {
-            config->windowWidth = atoi(value);
-        }
         if (strcmp(key, "ATTACK_SPEED") == 0) {
             config->attckSpeed = atoi(value);
         }

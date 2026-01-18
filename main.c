@@ -57,8 +57,8 @@ int main(int argc, char* argv[]) {
     Config config;
     loadConfig("assets/config.txt", &config);
 
-    int w_window= config.windowWidth;
-    int h_window= config.windowHeight;
+    int w_window= 800;
+    int h_window= 800;
     
     Uint32 lastShotTime = 0;
     int gunCooldown = 1000 / config.attckSpeed;
@@ -191,7 +191,7 @@ int main(int argc, char* argv[]) {
 
     Button playButton = {{220, 150, 200, 60}, {0, 200, 0, 255}, "Play",1};
     Button quitButton = {{220, 250, 200, 60}, {200, 0, 0, 255}, "Quit",1};
-    Button replayButton = {{570, 600, 200, 60}, {0, 200, 0, 255}, "Reesayer",1};
+    Button replayButton = {{570, 600, 200, 60}, {0, 200, 0, 255}, "Rejouer",1};
     Button menuButton = {{570, 700, 200, 60}, {0, 200, 0, 255}, "menu",1};
     Button scoresButton = {{220, 350, 200, 60}, {0, 0, 200, 255}, "Scores", 1};
     Button scoresDeathButton = {{570, 500, 200, 60}, {0, 0, 200, 255}, "Scores", 1};
