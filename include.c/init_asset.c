@@ -76,12 +76,9 @@ void init_weapon_assets(SDL_Renderer* renderer, Char* arme, Char* player) {
     arme->x = player->x + 50;
     arme->y = player->y + 50;
     arme->rect.w = player->rect.w;
-    arme->rect.h = player->rect.h + 50;
+    arme->rect.h = player->rect.h;
 
-    SDL_Surface* couteau = IMG_Load("assets/images/couteau.png");
-    SDL_Surface* armeS = IMG_Load("assets/images/arme.png");
-
+    SDL_Surface* armeS = IMG_Load("assets/images/spr_wep_brnz_sword_1.png");
     arme->normal_texture = SDL_CreateTextureFromSurface(renderer, armeS);
-    SDL_FreeSurface(couteau);
     SDL_FreeSurface(armeS);
 }
