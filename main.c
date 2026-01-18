@@ -26,6 +26,7 @@ int main(int argc, char* argv[]) {
     int inMenu = 1;
     int inMenu2 = 0;
     int inGame = 0;
+    int inGame2 = 0;
     int inDeathMenu = 0;
     int inWinMenu = 0;
     int pickedSword = 0;
@@ -82,6 +83,27 @@ int main(int argc, char* argv[]) {
     SDL_Texture *texture_object_background = SDL_CreateTextureFromSurface(renderer, object_background);
     SDL_FreeSurface(object_background);
     texture_background_check(window, renderer, texture, texture_object_background);
+
+
+    SDL_Surface* background_world_2 = IMG_Load("assets/images/carte_2.png");
+    surface_background_check(window, renderer, texture, background_world_2);
+    SDL_Texture *texture_background_world_2 = SDL_CreateTextureFromSurface(renderer, background_world_2);
+    SDL_FreeSurface(background_world_2);
+    texture_background_check(window, renderer, texture, texture_background_world_2);
+
+    SDL_Surface* projectil_boss_vertical = IMG_Load("assets/images/projectil_boss_vertical.png");
+    surface_background_check(window, renderer, texture, projectil_boss_vertical);
+    SDL_Texture *texture_projectil_boss_vertical = SDL_CreateTextureFromSurface(renderer, projectil_boss_vertical);
+    SDL_FreeSurface(projectil_boss_vertical);
+    texture_background_check(window, renderer, texture, texture_projectil_boss_vertical);
+
+    SDL_Surface* projectil_boss_horizontal = IMG_Load("assets/images/projectil_boss_horizontal.png");
+    surface_background_check(window, renderer, texture, projectil_boss_horizontal);
+    SDL_Texture *texture_projectil_boss_horizontal = SDL_CreateTextureFromSurface(renderer, projectil_boss_horizontal);
+    SDL_FreeSurface(projectil_boss_horizontal);
+    texture_background_check(window, renderer, texture, texture_projectil_boss_horizontal);
+
+
 
     SDL_Surface* gameoverSurface = IMG_Load("assets/images/game_over.png");
     if (!gameoverSurface) {
@@ -508,6 +530,8 @@ int main(int argc, char* argv[]) {
                 SDL_FreeSurface(sQuit); SDL_DestroyTexture(tQuit);
             }
         }
+
+        if (inGame2)
 
         SDL_SetRenderDrawColor(renderer, 30, 30, 30, 255);
         if(!inGame) SDL_RenderClear(renderer);
