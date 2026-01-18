@@ -23,6 +23,12 @@ void loadConfig(char *filename, Config *config) {
         *equalSign = '\0';
         char *key = line;
         char *value = equalSign + 1;
+        if (strcmp(key, "POINT_DE_VIE") == 0) {
+            config->point_de_vie = atoi(value);
+        }
+        if (strcmp(key, "POINT_DE_VIE_MAX") == 0) {
+            config->point_de_vie_max = atoi(value);
+        }
         if (strcmp(key, "ATTACK_SPEED") == 0) {
             config->attckSpeed = atoi(value);
         }

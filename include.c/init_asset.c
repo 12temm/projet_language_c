@@ -2,8 +2,8 @@
 #include "init_assets.h"
 #include <SDL2/SDL_image.h>
 
-void init_player_assets(SDL_Renderer* renderer, Char* player) {
-    player->health = 3;
+void init_player_assets(SDL_Renderer* renderer, Char* player, int config_point_de_vie,int config_point_de_vie_max) {
+    player->health = config_point_de_vie;
     player->moving = 0;
     player->x = 300;
     player->y = 300;
@@ -16,7 +16,7 @@ void init_player_assets(SDL_Renderer* renderer, Char* player) {
     player->currentFrame = 0;
     player->lastFrameTime = 0;
     player->frameDelay = 100;
-    player->maxHealth = 3;
+    player->maxHealth = config_point_de_vie_max;
     player->invincible = 0;
     player->invincibleStart = 0;
     player->invincibleTime = 1000;

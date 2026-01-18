@@ -174,8 +174,14 @@ int main(int argc, char* argv[]) {
         }
     }
 
+    int point_de_vie = config.point_de_vie;
+    int max_point_de_vie = config.point_de_vie_max;
+
+    printf("point_de_vie: %d\n", point_de_vie);
+    printf("max_point_de_vie: %d\n", max_point_de_vie);
+
     Char player;
-    init_player_assets(renderer, &player);
+    init_player_assets(renderer, &player,point_de_vie,max_point_de_vie);
 
     Char arme;
     init_weapon_assets(renderer, &arme, &player);

@@ -34,8 +34,8 @@ typedef struct character {
 } Char;
 
 typedef struct config {
-    int windowHeight;
-    int windowWidth;
+    int point_de_vie;
+    int point_de_vie_max;
     int attckSpeed;
     int numEnnemi;
 } Config;
