@@ -52,8 +52,15 @@ void update_enemies_logic(Char *ennemis, int numEnnemi, Char *player) {
     for (int i = 0; i < numEnnemi; i++) {
         if (!ennemis[i].dead) {
             float dx = player->x - ennemis[i].x;
+
+            if (dx >= 0)
+                ennemis[i].orientation = 1; //
+            else
+                ennemis[i].orientation = 0;
+
             float dy = player->y - ennemis[i].y;
             float dist = sqrtf(dx*dx + dy*dy);
+
 
             if (dist < 10 && !player->invincible) {
                 player->health -= 1;
@@ -65,7 +72,6 @@ void update_enemies_logic(Char *ennemis, int numEnnemi, Char *player) {
                 dx /= dist; dy /= dist;
                 ennemis[i].vx = dx * ennemis[i].speed;
                 ennemis[i].vy = dy * ennemis[i].speed;
-                ennemis[i].orientation = (dx >= 0) ? 1 : 2;
             }
             ennemis[i].x += ennemis[i].vx;
             ennemis[i].y += ennemis[i].vy;
@@ -75,6 +81,7 @@ void update_enemies_logic(Char *ennemis, int numEnnemi, Char *player) {
             ennemis[i].vx = 0;
             ennemis[i].vy = 0;
         }
+
     }
     if (player->invincible && (now - player->invincibleStart >= player->invincibleTime)) {
         player->invincible = 0;
